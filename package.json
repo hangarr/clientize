@@ -17,11 +17,19 @@
     "url": "https://github.com/hangarr/clientize/issues"
   },
   "homepage": "https://github.com/hangarr/clientize",
+  "engines": {
+    "node": "^0.10.35",
+    "npm": "^1.4.28"
+  },
   "dependencies": {
-    "express": "4.10.x",
-    "hapi": "8.1.x"
+    "express": "^4.10.7",
+    "hapi": "^8.1.0",
+    "kew": "^0.5.0-alpha.1",
+    "orchestrate": "^0.3.16",
+    "request": "^2.51.0",
+    "url": "^0.10.2"
   },
   "devDependencies": {
-    "browserify": "8.1.x"
+    "browserify": "^8.1.0"
   }
 }
