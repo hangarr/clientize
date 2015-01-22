@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="rpapp">
+<head>
+	<meta charset="utf-8">
+	<title>Reverse Proxy Dashboard</title>
+ 	<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+<!--
+	<link href="css/default.css" rel="stylesheet" type="text/css" />
+-->
+</head>
+<body>
+	<header>
+		<h1 ng-controller="DashboardCtrl">{{helloMessage}}</h1>
+	</header>
+	<section>
+	</section>
+	<footer>
+	</footer>
+
+	<script src="public/assets/js/main.js"></script>
+
+<!--
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+
+	<script type="text/javascript">
+		function DashboardCtrl($scope) {
+			$scope.helloMessage = "Reverse Proxy Dashboard";
+		}
+	</script>
+-->
+<!--
+	<script src="public/vendor/angularjs/1.3.8/angular.js"></script>
+	<script src="public/vendor/angularjs/1.3.8/angular-route.js"></script>
+-->
+<!--
+  	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.8/angular.min.js"></script>
+   	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.8/angular-route.min.js"></script>
+-->
+<!--
+	<script type="text/javascript">
+	
+		var services = angular.module('rpapp.services', []);
+		var directives = angular.module('rpapp.directives', []);
+		var filters = angular.module('rpapp.filters', []);
+
+		function dashboardCtrl($window, $scope, $log, $timeout, $location) {
+			$scope.helloMessage = 'Reverse Proxy Dashboard: ' + 'name';
+	    };
+		var dashboard = angular.module('rpapp.dashboard', [])
+		.controller( 'DashboardCtrl', dashboardCtrl );
+
+		angular.module('rpapp', [
+	             	        'ngRoute',
+	             	        services.name,
+	             	        directives.name,
+	             	        filters.name,
+	             	        dashboard.name
+	             	    ])
+//	    .config()
+	    .constant('version', '1.1');
+	</script>
+-->
+</body>
+</html>
