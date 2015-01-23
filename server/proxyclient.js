@@ -1,6 +1,5 @@
 /**
- * A client derived from the Orchestrate client that involves little more than
- * wrapping Orchestrate client.
+ * An Orchestrate.io client for the Clientize reverse-proxy
  */
 ;(function() {
 	'use strict';
@@ -14,6 +13,12 @@
 	  , pjson = require('../package.json');
 
 	/**
+	 * Clientize Orchestrate.io client.
+	 * 
+	 * This does little more than wrap the Orchestrate.io with a derived client
+	 * object that is configures to talk to the Clientize reverse proxy rather than
+	 * directly to the Orchestrate.io API
+	 * 
 	 * @constructor
 	 * @param {string} protocol (optional, default 'http')
 	 * @param {string} proxy host name

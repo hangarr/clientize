@@ -20,7 +20,8 @@
 	  ,	Path = require('path')
 	  , assert = require('assert')
 	  , async = require('async')
-	  , oio = require('./server/proxyclient');
+	  , oio = require('clientize-orchestrate');
+//	  , oio = require('./server/proxyclient');
 //	  , oio = require('orchestrate');
 
 	var defaultOptions = {
@@ -45,7 +46,7 @@
 		}
     };
 	
-	// add the dashboard section if it  provided
+	// add the dashboard section if it is provided
 	if(process.env.CLIENTIZE_DASH_KEY) {
 		defaultOptions.dashboard = {
 			app: 'clientize-dashboard',
