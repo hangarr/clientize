@@ -1,7 +1,6 @@
 ;(function() {
 	'use strict';
 	
-//	var ng = require('angular')
 	var angular = window.angular;
 
 	// put individual modules here

@@ -1,0 +1,15 @@
+<div id="proxy-options" class="container-fluid" ng-cloak>
+	<h2>Reverse-Proxy Configuration</h2>
+	<div class="row row-spacer" ng-cloak>
+		<div class="col-xs-1"></div>
+		<div class="col-xs-10">
+			<div ng-if="optionsLoading">
+				<p>Loading <i class="fa fa-refresh fa-spin"></i></p>
+			</div>
+			<div ng-if="optionsShow">
+				<pre>{{proxyOptions}}</pre>
+			</div>
+		</div>
+		<div class="col-xs-1"></div>
+	</div>
+</div>

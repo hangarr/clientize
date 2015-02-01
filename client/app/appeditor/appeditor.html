@@ -1,0 +1,39 @@
+<div class="container-fluid" ng-controller="AppEditorCtrl" ng-cloak>
+	<h2>Application Editor</h2>
+	<div class="row row-spacer" ng-cloak>
+		<div class="col-xs-1"></div>
+		<div class="col-xs-10">
+			<div ng-if="appsLoading">
+				<p>Loading <i class="fa fa-refresh fa-spin"></i></p>
+			</div>
+			<div ng-if="appsShow">
+				<pre>{{apps}}</pre>
+			</div>
+		</div>
+		<div class="col-xs-1"></div>
+	</div>
+<!--
+				<form name="proxyform" class="navbar-form" action="/#" method="post" ng-submit="onSubmit(queryform, $event)" role="search">
+					<div class="col-xs-1"></div>
+					<div class="col-xs-10">
+						app: <input name="input" ng-model="proxyApp" required><br>
+						key: <input name="input" ng-model="proxyKey"><br>
+						route: <br>
+						method: <input name="input" ng-model="routeMethod" required><br>
+						path: <input name="input" ng-model="routePath" required><br>
+						protocol: <input name="input" ng-model="routeProtocol" required><br>
+						host: <input name="input" ng-model="routeHost" required><br>
+						port: <input name="input" ng-model="routePort"><br>
+						username: <input name="input" ng-model="routeUsername" required><br>
+						password: <input name="input" ng-model="routePassword"><br>
+						strip: <input name="input" ng-model="routeStrip"><br>
+						prefix: <input name="input" ng_model="routePrefix"><br>					
+        			</div>
+     				<div>
+    					<button type="submit" class="btn btn-nooutline">
+    						<span class="glyphicon glyphicon-search"></span>
+    					</button>
+      				</div>
+      			</form>
+-->	
+</div>

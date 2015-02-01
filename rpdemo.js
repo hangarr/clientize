@@ -2,14 +2,16 @@
  * Reverse proxy demo
  */
 /**
- * CLIENTIZE_HOST				= Name of clientize proxy host
- * CLIENTIZE_PORT				= Host port
- * CLIENTIZE_API_OIOKEY			= Orchestrate.io API key for reverse-proxy
- * CLIENTIZE_API_KEY			= Client application key for reverse-proxy
- * CLIENTIZE_DASH_KEY			= Login authorization key for Orchestrate.io dashboard app
- * CLIENTIZE_DB_OIOKEY			= Orchestrate.io API key for reverse-proxy configuration storage
+ * CLIENTIZE_HOST				= Name of clientize proxy host (optional)
+ * CLIENTIZE_PORT				= Host port (optional)
  * CLIENTIZE_DB_OIOCOLLECTION	= Orchestrate.io collection for configuration storage
  * CLIENTIZE_DB_APP				= Name of reverse-proxy configuration doc in CLIENTIZE_DB_OIOCOLLECTION
+ * CLIENTIZE_DB_OIOKEY			= Orchestrate.io API key for reverse-proxy configuration storage
+ * CLIENTIZE_PROXY_OIOKEY		= Orchestrate.io API key for reverse-proxy
+ * CLIENTIZE_PROXY_KEY			= Client application key for reverse-proxy
+ * CLIENTIZE_DASHBOARD_LOGIN	= Client dashboard application login password
+ * CLIENTIZE_DASHBOARD_KEY		= Client application key for Orchestrate.io configuration storage
+ * CLIENTIZE_DASHBOARD_OIOKEY	= Orchestrate.io API key for configuration storage (CLIENTIZE_DB_OIOKEY)
  */
 ;(function() {
 	'use strict';
@@ -31,14 +33,14 @@
 		},   
 		proxy: {
 			app: 'clientize-passthrough',
-			key: process.env.CLIENTIZE_API_KEY,
+			key: process.env.CLIENTIZE_PROXY_KEY,
 			routes: [{
 				method: 'GET',
 				path: '/{p*}',
 				protocol: 'https',
 				host: 'api.orchestrate.io',
 //    			port: null,				
-				username: process.env.CLIENTIZE_API_OIOKEY,
+				username: process.env.CLIENTIZE_PROXY_OIOKEY,
 //    			password: null,
 				strip: true,
 				prefix: '/api.orchestrate.io/clientize-passthrough'
@@ -47,17 +49,17 @@
     };
 	
 	// add the dashboard section if it is provided
-	if(process.env.CLIENTIZE_DASH_KEY) {
+	if(process.env.CLIENTIZE_DASHBOARD_KEY) {
 		defaultOptions.dashboard = {
 			app: 'clientize-dashboard',
-			key: process.env.CLIENTIZE_DASH_KEY,
+			key: process.env.CLIENTIZE_DASHBOARD_KEY,
 			routes: [{
 				method: 'GET',
 				path: '/api.orchestrate.io/clientize-dashboard/v0',
 				protocol: 'https',
 				host: 'api.orchestrate.io',
 //			    port: null,				
-				username: process.env.CLIENTIZE_DB_OIOKEY,
+				username: process.env.CLIENTIZE_DASHBOARD_OIOKEY,
 //			    password: null,
 				strip: true,
 				prefix: '/api.orchestrate.io/clientize-dashboard'
@@ -69,12 +71,14 @@
 				protocol: 'https',
 				host: 'api.orchestrate.io',
 //   			port: null,				
-				username: process.env.CLIENTIZE_DB_OIOKEY,
+				username: process.env.CLIENTIZE_DASHBOARD_OIOKEY,
 //   			password: null,
 				strip: true,
 				prefix: '/api.orchestrate.io/clientize-dashboard'
 			}]
 		};
+		if(process.env.CLIENTIZE_DASHBOARD_LOGIN)
+			defaultOptions.dashboard.login = process.env.CLIENTIZE_DASHBOARD_LOGIN;
 	}
 
 	// add the configuration DB section if provided
@@ -100,7 +104,7 @@
 	        		callback(null);
 	        	})
 	        	.fail(function(err) {
-	        		console.log('fail');
+	        		console.log('Could not retrieve proxy configuration');
 	        		callback(err);
 	        	});
 	        }
@@ -140,18 +144,19 @@
 	    function(callback) {
 	        cdb = oio({
 	        	protocol: 'http',
-	        	host: 'localhost',
-	        	port: 8000,
+	        	host: options.connection.host,
+	        	port: options.connection.port,
 	        	prefix: '/api.orchestrate.io/' + options.proxy.app,
-	        	token: options.proxy.key + ':'
+//	        	token: options.proxy.key + ':'
+	        	token: { bearer: options.proxy.key }
 	        });
 	    	cdb.ping()
 	    	.then(function() {
-	    		console.log('Orchestrate ping successful');
+	    		console.log('Reverse-proxied host ping successful');
 	    		callback(null);
 	    	})
 	    	.fail(function(err) {
-	    		console.log('Orchestrate ping failed');
+	    		console.log('Reversed-proxied host ping failed');
 	    		console.log(err.body);
 	    		callback(err);
 	    	});	    	
@@ -162,6 +167,8 @@
 			console.log(err);
 		}
 		else {
+			console.log('Routing table:');
+			console.log(rp.routes());
 			console.log('Successfully launched reverse-proxy server');
 		}
 	});

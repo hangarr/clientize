@@ -1,7 +1,9 @@
+/**
+ * AngularJS  angular.module wrapper for DashboardCtrl controller function
+ */
 ;(function() {
 	'use strict';
 	
-//	var ng = require('angular')
 	var angular = window.angular;
 
 	var dashboardCtrl = require('./dashboardCtrl.js');

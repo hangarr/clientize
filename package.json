@@ -7,11 +7,11 @@
   "scripts": {
     "test": "test",
     "build": "npm run build-copy && npm run build-templates && npm run build-bootstrap && npm run build-font-awesome && npm run build-js",
-    "build-copy": "rm -f -r public && mkdir public && cp -R client/assets client/*.html public",
-    "build-templates": "/bin/zsh -c 'cp client/*/**/*.html public/templates' 2>/dev/null || true",
+    "build-copy": "rm -f -r public && mkdir public && cp -R client/assets public",
+    "build-templates": "/bin/zsh -c 'mkdir -p public/templates && cp client/*.html public && cp client/*/**/*.html public/templates'",
     "build-bootstrap": "cp -R node_modules/bootstrap/dist/css node_modules/bootstrap/dist/fonts public/assets",
     "build-font-awesome": "cp -R node_modules/font-awesome/css node_modules/font-awesome/fonts public/assets",
-    "build-js": "mkdir -p public/assets/js && browserify client/app/app.js > public/assets/js/main.js"
+    "build-js": "mkdir -p public/assets/js && BROWSERIFYSWAP_ENV='all' browserify client/app/app.js > public/assets/js/main.js"
   },
   "repository": {
     "type": "git",
@@ -30,22 +30,39 @@
   "dependencies": {
     "angular": "^1.3.10",
     "angular-bootstrap": "^0.12.0",
+    "angular-resource": "^1.3.10",
     "angular-route": "^1.3.10",
+    "angular-touch": "^1.3.10",
     "async": "^0.9.0",
+    "boom": "^2.6.1",
     "bootstrap": "^3.3.2",
+    "browser-request": "^0.3.3",
+    "browserify-swap": "^0.2.1",
     "clientize-orchestrate": "git://github.com/hangarr/clientize-orchestrate.git",
     "express": "^4.10.7",
     "font-awesome": "^4.2.0",
     "hapi": "^8.1.0",
     "hapi-auth-basic": "^2.0.0",
+    "hapi-auth-bearer-token": "^3.1.0",
     "hoek": "^2.11.0",
     "kew": "^0.5.0-alpha.1",
-    "orchestrate": "^0.3.16",
-    "request": "^2.51.0",
     "url": "^0.10.2"
   },
   "devDependencies": {
     "browserify": "^8.1.0",
     "orcup": "0.0.1"
+  },
+  "browserify": {
+    "transform": [
+      "browserify-swap"
+    ]
+  },
+  "browserify-swap": {
+    "@packages": [
+      "request"
+    ],
+    "all": {
+      "node_modules/request/\\S+\\.js$": "browser-request"
+    }
   }
 }
