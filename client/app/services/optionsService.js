@@ -35,30 +35,6 @@
 					_response = response;
 					reject('Could not load current proxy configuration');
 				});
-/*
-				.success(function(data, status, headers, config) {
-					// data contains the response
-					// status is the HTTP status
-					// headers is the header getter function
-					// config is the object that was used to create the HTTP request
-					options = {
-						data: data,
-						status: status,
-						headers: headers,
-						config: config
-					};
-					resolve('Loaded current proxy configuration');
-				})
-				.error(function(data, status, headers, config) {
-					options = {
-						data: data,
-						status: status,
-						headers: headers,
-						config: config
-					};
-					reject('Could not load current proxy configuration');
-				});
-*/
 			});
 		};
 

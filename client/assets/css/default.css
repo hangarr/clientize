@@ -1,3 +1,67 @@
+.nav, .pagination, .carousel, .panel-title a { 
+	cursor: pointer; 
+}
 .row-spacer {
 	margin-top: 20px;
 }
+
+.code-block {
+	font-size: 10px;
+	font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+.text-block-20 {
+	height: 20em;
+}
+
+.text-block-40 {
+	height: 40em;
+}
+
+#app-buffer {
+	height: 40em;
+}
+
+.clbtn {
+	width: 80px; 
+}
+
+.clbtn-info {
+	font-family:"FontAwesome";
+	color:#6e90a6;
+	padding-left:5px;
+	text-decoration:none;
+	border: none;
+    outline: none;
+    background-color: transparent;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-right: 0px;
+}
+.clbtn-fa {
+	font-family:"FontAwesome";
+}
+/*
+ * suggested for modal backdrop fix but may not be needed
+ */
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+}
+
+.modal-backdrop {
+  bottom: 0;
+}
+
+/* 
+  Allow angular.js to be loaded in body, hiding cloaked elements until 
+  templates compile.  The !important is important given that there may be 
+  other selectors that are more specific or come later and might alter display.  
+ */
+[ng\:cloak], [ng-cloak], .ng-cloak {
+  display: none !important;
+}
+

@@ -280,7 +280,7 @@ console.log('token: ' + token);
 			}
 		});
 	
-		// serves dashboard pages
+		// serves dashboard apps page
 		this.server.route({
 			method: 'GET',
 //			path: '/{p*}',

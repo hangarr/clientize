@@ -16,6 +16,8 @@
 	        return viewLocation === $location.path();
 	    };
 	    
+	    $scope.logoutHost = $location.host() + ':' + $location.port();
+	    
 		$scope.optionsShow = false;
 		$scope.optionsLoading = true;
 		
@@ -30,6 +32,10 @@
 			$scope.optionsShow = true;
 			$scope.proxyOptions = err + '\n ' + JSON.stringify(OptionsService.response(), null, '    ');
 		});
+		
+		$scope.logout = function() {
+
+		};
     };
     
     module.exports = dashboardCtrl;

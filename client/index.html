@@ -22,8 +22,8 @@
 	<![endif]-->
 </head>
 <body>
-	<div ng-controller="DashboardCtrl" ng-cloak>
-	<nav class="navbar navbar-inverse" role="navigation">
+<div ng-controller="DashboardCtrl">
+	<nav class="navbar navbar-inverse" role="navigation" ng-cloak>
    		<!-- Brand and toggle get grouped for better mobile display -->
     	<div class="navbar-header">
 			<button type="button" class="navbar-toggle" ng-init="navbarCollapsed = true" ng-click="navbarCollapsed = !navbarCollapsed">
@@ -32,7 +32,7 @@
 				<span class="icon-bar"></span>
 				<span class="icon-bar"></span>
 			</button>
-			<span class="navbar-brand" ng-cloak>
+			<span class="navbar-brand">
         		{{headerMessage}}
       		</span>
     	</div>
@@ -43,102 +43,14 @@
         		<li ng-class="{ active: isActive('/') }"><a href="/">Proxy</a></li>
         		<li ng-class="{ active: isActive('/apps') }"><a href="/apps">Apps</a></li>
       		</ul>
+      		<ul class="nav navbar-nav navbar-right">
+      			<li class="active"><a id="logout" ng-click="logout()">Logout</a></li>
+      		</ul>
     	</div>
 	</nav>
 
-	<div ng-view class="view-frame">
-
-<!--
-	<div id="proxy-options" class="container-fluid">
-		<h2>Clientize proxy configuration</h2>
-		<div class="row row-spacer" ng-cloak>
-			<div class="col-xs-1"></div>
-			<div class="col-xs-10">
-				<div ng-if="optionsLoading">
-					<p>Loading <i class="fa fa-refresh fa-spin"></i></p>
-				</div>
-				<div ng-if="optionsShow">
-					<pre>{{proxyOptions}}</pre>
-				</div>
-			</div>
-			<div class="col-xs-1"></div>
-		</div>
-	</div>
--->
-	</div>
-	
-<!--
-	<tabset>
-	<tab heading="Proxy" active="tab.active">
-		<div id="proxy-options" class="container-fluid">
-			<div class="row row-spacer">
-				<div class="col-xs-1"></div>
-				<div class="col-xs-10">
-					<pre>{{proxyOptions}}</pre>
-				</div>
-				<div class="col-xs-1"></div>
-			</div>
-		</div>
-	</tab>
-	<tab heading="Apps">
-		<div id="doc-editor" class="container-fluid" ng-controller="DocEditorCtrl">
-			<div class="row row-spacer">
-				<div class="col-xs-1"></div>
-				<div class="col-xs-10">
-				    <input type="text" ng-model="selected" typeahead="state for state in states | filter:$viewValue | limitTo:8" class="form-control">
-	    			<pre>Query: {{selected | json}}</pre>
-	    		</div>
-				<div class="col-xs-1"></div>
-	    	</div>
-	    </div>
-	</tab>
-	</tabset>
-	<footer>
-	</footer>
--->
+	<div ng-view class="view-frame"></div>
 	<script src="public/assets/js/main.js"></script>
-
-<!--
-	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
-
-	<script type="text/javascript">
-		function DashboardCtrl($scope) {
-			$scope.helloMessage = "Reverse Proxy Dashboard";
-		}
-	</script>
--->
-<!--
-	<script src="public/vendor/angularjs/1.3.8/angular.js"></script>
-	<script src="public/vendor/angularjs/1.3.8/angular-route.js"></script>
--->
-<!--
-  	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.8/angular.min.js"></script>
-   	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.8/angular-route.min.js"></script>
--->
-<!--
-	<script type="text/javascript">
-	
-		var services = angular.module('rpapp.services', []);
-		var directives = angular.module('rpapp.directives', []);
-		var filters = angular.module('rpapp.filters', []);
-
-		function dashboardCtrl($window, $scope, $log, $timeout, $location) {
-			$scope.helloMessage = 'Reverse Proxy Dashboard: ' + 'name';
-	    };
-		var dashboard = angular.module('rpapp.dashboard', [])
-		.controller( 'DashboardCtrl', dashboardCtrl );
-
-		angular.module('rpapp', [
-	             	        'ngRoute',
-	             	        services.name,
-	             	        directives.name,
-	             	        filters.name,
-	             	        dashboard.name
-	             	    ])
-//	    .config()
-	    .constant('version', '1.1');
-	</script>
--->
-	</div>
+</div>
 </body>
 </html>
