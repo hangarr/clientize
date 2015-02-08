@@ -1,143 +1,211 @@
 /**
- * hapi demo from project website
- * Launch the application by running "node demo.js" and point a browser at "localhost:8000/hello"
+ * Reverse proxy demo
  */
 /**
- * 
-curl https://api.orchestrate.io/v0/api-access/$key \
--X PUT \
--H 'Content-Type:application/json' \
--u '12345678-1234-1234-1234-123456789012:' \
--d '{"name": "Kate Robbins", "hometown": "Portland, OR", "twitter": "@katesfaketwitter"}'
-*
-curl https://api.orchestrate.io/v0/api-access/$key \
--X GET \
--u '12345678-1234-1234-1234-123456789012:'
-*
-curl -i "https://api.orchestrate.io/v0/api-access/kates-user-id" \
-  -XPATCH \
-  -H 'Content-Type: application/json-patch+json' \
-  -u '$api_key' \
-  -d '[{ "op": "add", "path": "favorite_food", "value": "Pizza" }]'
+ * CLIENTIZE_HOST				= Name of clientize proxy host (optional)
+ * CLIENTIZE_PORT				= Host port (optional)
+ * CLIENTIZE_DB_OIOCOLLECTION	= Orchestrate.io collection for configuration storage
+ * CLIENTIZE_DB_APP				= Name of reverse-proxy configuration doc in CLIENTIZE_DB_OIOCOLLECTION
+ * CLIENTIZE_DB_OIOKEY			= Orchestrate.io API key for reverse-proxy configuration storage
+ * CLIENTIZE_PROXY_OIOKEY		= Orchestrate.io API key for reverse-proxy
+ * CLIENTIZE_PROXY_KEY			= Client application key for reverse-proxy
+ * CLIENTIZE_PROXY_HOST			= Default upstream host
+ * CLIENTIZE_PROXY_PORT			= Default upstream host port
+ * CLIENTIZE_DASHBOARD_LOGIN	= Client dashboard application login password
+ * CLIENTIZE_DASHBOARD_KEY		= Client application key for Orchestrate.io configuration storage
+ * CLIENTIZE_DASHBOARD_OIOKEY	= Orchestrate.io API key for configuration storage (CLIENTIZE_DB_OIOKEY)
  */
 ;(function() {
-	var Path = require('path')
-	  , Hapi = require('hapi')
-	  , Hoek = require('hoek')
-	  , request = require('request')
-	  , url = require('url')
-	  , Q = require('kew')
+	'use strict';
+	process.env.PROJECT_DIR = __dirname;
+
+	var Hoek = require('hoek')
+	  ,	ReverseProxy = require('./server/reverseproxy')
+	  , generatekey = require('./server/generatekey')
+	  ,	Path = require('path')
 	  , assert = require('assert')
-	  , pjson = require('./package.json')
-	  , db = require('orchestrate')(process.env.CLIENTIZE_OIOKEY)
-	  , Endpoint = require('./server/endpoint.js')
-	  , HapiAuthBasic = require('hapi-auth-basic')
-	  , ValidateBasic = require('./server/validate-basic')
-	  , MapUriBasic = require('./server/mapuri-basic');
+	  , async = require('async')
+	  , oio = require('clientize-orchestrate');
 
-	// Generate an clientizeAPI key
-	var clientizeKey = Endpoint.generateKey([3,5,2], '_');
-	console.log(clientizeKey);
-	console.log(Hoek.base64urlEncode(clientizeKey + ':'));
-
-	// Create a server with a host and port
-	var server = new Hapi.Server();
-	server.app.userAgent = 'clientize.js/' + pjson.version + ' (Rick Hangartner; hapi proxy server)';
-	server.app.apiKey = process.env.CLIENTIZE_OIOKEY;
-	server.app.apiHost = process.env.CLIENTIZE_OIOHOST;
-	server.app.apiAuthorization = Hoek.base64urlEncode(server.app.apiKey);
-//	server.app.apiAuthorization = (new Buffer(server.app.apiKey)).toString('base64');
-
-	server.connection({ 
-		host: 'localhost', 
-		port: 8000 
-	});
-
-	// Add the routes
-	server.route({
-		method: 'GET',
-		path:'/hello', 
-		handler: function (request, reply) {
-			reply('hello world');
+	var clientizeOptions = {
+		HOST: (process.env.CLIENTIZE_HOST ? process.env.CLIENTIZE_HOST : 'localhost'),
+		PORT: (process.env.CLIENTIZE_PORT ? process.env.CLIENTIZE_PORT : 8000),
+		DB_OIOCOLLECTION: (process.env.CLIENTIZE_DB_OIOCOLLECTION 
+							? process.env.CLIENTIZE_DB_OIOCOLLECTION : 'clientize' ),
+		DB_APP: (process.env.CLIENTIZE_DB_APP ? process.env.CLIENTIZE_DB_APP : 'clientize-passthrough'),
+		DB_OIOKEY: (process.env.CLIENTIZE_DB_OIOKEY	? process.env.CLIENTIZE_DB_OIOKEY : generatekey([8], '')),
+		PROXY_OIOKEY: (process.env.CLIENTIZE_PROXY_OIOKEY ?	process.env.CLIENTIZE_PROXY_OIOKEY
+						: generatekey([8,4,4,4,12], '-')),
+		PROXY_KEY: (process.env.CLIENTIZE_PROXY_KEY	? process.env.CLIENTIZE_PROXY_KEY : generatekey([8],'')),
+		DASHBOARD_LOGIN: (process.env.CLIENTIZE_DASHBOARD_LOGIN ? process.env.CLIENTIZE_DASHBOARD_LOGIN : 'clientizeit'),
+		DASHBOARD_KEY: (process.env.CLIENTIZE_DASHBOARD_KEY	? process.env.CLIENTIZE_DASHBOARD_KEY : generatekey([8], '')),
+		DASHBOARD_OIOKEY: (process.env.CLIENTIZE_DASHBOARD_OIOKEY ? process.env.CLIENTIZE_DASHBOARD_OIOKEY
+							: generatekey([8,4,4,4,12], '-'))
+	};
+	// add host and port if supplied
+	if(process.env.CLIENTIZE_PROXY_HOST) {
+		clientizeOptions.PROXY_HOST = process.env.CLIENTIZE_PROXY_HOST;
+		if(process.env.CLIENTIZE_PROXY_PORT) 
+			clientizeOptions.PROXY_PORT = process.env.CLIENTIZE_PROXY_PORT;
+	}
+	else {
+		clientizeOptions.PROXY_HOST = clientizeOptions.HOST;
+		clientizeOptions.PROXY_PORT = clientizeOptions.PORT;
+	}
+console.log(clientizeOptions);
+	// These are the full reverse proxy configuration options
+	var defaultOptions = {
+		connection: {
+			host: clientizeOptions.HOST,
+			port: clientizeOptions.PORT
+		},   
+		proxy: {
+			app: clientizeOptions.DB_APP,
+			key: clientizeOptions.PROXY_KEY,
+			routes: [{
+				method: '*',
+				path: '/'+ clientizeOptions.PROXY_HOST + '/' + clientizeOptions.DB_APP + '/{p*}',
+				protocol: 'https',
+				host: clientizeOptions.PROXY_HOST,
+//    			port: null,				
+				username: clientizeOptions.PROXY_OIOKEY,
+//    			password: null,
+				strip: true,
+				prefix: '/'+ clientizeOptions.PROXY_HOST + '/' + clientizeOptions.DB_APP
+			}]
 		}
-	});
-/*
-	server.route({
-		method: 'GET',
-		path:'/{p*}', 
-		handler: {
-			proxy: {
-//				uri: 'https://api.orchestrate.io/v0/api-access/test1',
+    };	
+	// add the upstream host port if supplied
+	if(clientizeOptions.PROXY_PORT)
+		defaultOptions.proxy.port = clientizeOptions.PROXY_PORT;
+	
+	// Add the info for the dashboard application proxy if it is provided
+	// NOTE: Although we have default values we don't use them when environment values aren't supplied
+	if(process.env.CLIENTIZE_DASHBOARD_KEY) {
+		defaultOptions.dashboard = {
+			app: 'clientize-dashboard',
+			key: clientizeOptions.DASHBOARD_KEY,
+			routes: [{
+				method: 'GET',
+				path: '/api.orchestrate.io/clientize-dashboard/v0',
 				protocol: 'https',
 				host: 'api.orchestrate.io',
-				passThrough: true,
-				xforward: false
-			}
-		},
-		config: {
-			cors: true
-		}
-	});
-*/
-/*
-	server.route({
-		method: 'GET',
-		path: '/{p*}', 
-		handler: {
-			proxy: {
-				mapUri: function(request, callback) {
-					var uri = 'https://api.orchestrate.io' + request.url.href;
-					var headers = { 'Authorization' : 'Basic ' + server.app.apiAuthorization };
-					callback(null, uri, headers);
-				},
-				passThrough: true,
-				xforward: false
-			}
-		},
-
-		config: {
-			cors: true
-		}
-	});
-*/
-	server.register( HapiAuthBasic, function (err) {
-		
-		server.auth.strategy('apibasic', 'basic', {
-			validateFunc: ValidateBasic({
-				username: clientizeKey
-			}),
-			allowEmptyUserName: true
-		});
-
-		server.route({
-			method: 'GET',
-			path: '/{p*}', 
-			handler: {
-				proxy: {
-					mapUri: MapUriBasic({
-						protocol: 'https',
-						host: 'api.orchestrate.io',
-						username: server.app.apiKey,
-						strip: true
-					}),
-					passThrough: true,
-					xforward: false
-				}
+//				port: null,				
+				username: clientizeOptions.DASHBOARD_OIOKEY,
+//				password: null,
+				strip: true,
+				prefix: '/api.orchestrate.io/clientize-dashboard'
 			},
-			config: {
-				auth: 'apibasic',
-				cors: true
-			}
-		});
-	
-	});
+			{
+				method: '*',
+				path: Path.join('/api.orchestrate.io/clientize-dashboard/v0/',
+						clientizeOptions.DB_OIOCOLLECTION, '{p*}'),
+				protocol: 'https',
+				host: 'api.orchestrate.io',
+//	   			port: null,				
+				username: clientizeOptions.DASHBOARD_OIOKEY,
+//	   			password: null,
+				strip: true,
+				prefix: '/api.orchestrate.io/clientize-dashboard'
+			}],
+			login: clientizeOptions.DASHBOARD_LOGIN
+		};
+	}
+	else {
+		defaultOptions.dashboard = {
+			login: clientizeOptions.DASHBOARD_LOGIN				
+		};		
+	};
 
-	// Start the server
-	server.start(function(err) {
-		if(err)
-			console.log('err = ' + err);
-		else
-			console.log('Server started at: ' + server.info.uri);	
-	});
+	// Add the direct access info for the configuration DB 
+	// NOTE: Although we have default values we don't use them when environment values aren't supplied
+	if(process.env.CLIENTIZE_DB_OIOCOLLECTION && process.env.CLIENTIZE_DB_APP && process.env.CLIENTIZE_DB_OIOKEY) {
+		defaultOptions.db = {
+			collection: clientizeOptions.DB_OIOCOLLECTION,
+			app: clientizeOptions.DB_APP,
+			key: clientizeOptions.DB_OIOKEY				
+		};
+	};
 
+	var db, rp, cdb, options;
+	async.series([
+	    function(callback) {
+	    	if(defaultOptions.db) {
+	    		db = oio(defaultOptions.db.key);
+	    		db.search(defaultOptions.db.collection, 'app:"' + defaultOptions.db.app + '"')
+	        	.then(function(result) {
+	        		options = Hoek.clone(defaultOptions);
+	        		options.proxy = Hoek.clone(result.body.results[0].value);
+		    		console.log('Retrieved proxy configuration:');
+	        		console.log(JSON.stringify(options, null, '\t'));
+	        		callback(null);
+	        	})
+	        	.fail(function(err) {
+	        		console.log('Could not retrieve proxy configuration');
+	        		callback(err);
+	        	});
+	        }
+	        else {
+	        	options = defaultOptions;
+	        	console.log('Using default proxy configuration:');
+        		console.log(JSON.stringify(options, null, '\t'));
+        		setImmediate(callback(null));
+	        }
+	    },
+	    function(callback) {
+	        rp = new ReverseProxy(options);
+	    	rp.configure(function(err) {
+	    		if(err) {
+	    			console.log('Cannot create and configure reverse proxy server');
+	    			callback(err);
+	    		}
+	    		else {
+	    			console.log('Reverse-proxy server configured '
+	    				+ (options.dashboard ? 'with dashboard' : 'without dashboard'));
+	    			callback(null);
+	    		};
+	    	});    	
+	    },
+	    function(callback) {
+	    	rp.start(function(err) {
+	    		if(err) {
+	    			console.log('Cannot start reverse-proxy server:');
+	    			callback(err);
+	    		}
+	    		else {
+	    			console.log('Reverse-proxy server started at ' + rp.server.info.uri);
+	    			callback(null);
+	    		};
+	    	});    	
+	    },
+	    function(callback) {
+	        cdb = oio({
+	        	protocol: 'http',
+	        	host: options.connection.host,
+	        	port: options.connection.port,
+	        	prefix: '/api.orchestrate.io/' + options.proxy.app,
+	        	token: { bearer: options.proxy.key }
+	        });
+	    	cdb.ping()
+	    	.then(function() {
+	    		console.log('Reverse-proxied host ping successful');
+	    		callback(null);
+	    	})
+	    	.fail(function(err) {
+	    		console.log('Reversed-proxied host ping failed');
+	    		console.log(err.body);
+	    		callback(err);
+	    	});	    	
+	    }
+	], function(err, results) {
+		if(err) {
+			console.log('Failed to launch reverse-proxy server:');
+			console.log(err);
+		}
+		else {
+			console.log('Routing table:');
+			console.log(rp.routes());
+			console.log('Successfully launched reverse-proxy server');
+		}
+	});
 }).call(this);

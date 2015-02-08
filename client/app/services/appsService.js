@@ -12,7 +12,7 @@
 		  , tv4 = require('tv4');
 	
 		var _appTemplate = [{
-		    app: '// application name specifed for CLIENTIZE_DB_APP',
+		    app: '// application name specified for CLIENTIZE_DB_APP',
 		    key: '// reverse-proxy client API key for CLIENTIZE_PROXY_KEY',
 		    routes: [{
 		    	method: '// upstream server endpoint HTTP methods (\'GET\' or [\'GET\', \'POST\', ...] or *)',
@@ -165,6 +165,8 @@
 			});
 		};
 		
+		// Apps list initializer
+		// Returns a promise object
 		function AppsInitializer() {
 			return OptionsService.getInitialized().then(function(options) {
 				return QueryInitializer(options);
