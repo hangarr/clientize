@@ -81,9 +81,12 @@
 			if(!$scope.validate())
 				return;
 
+			AppsService.saveAll($scope.validationResults.js);
+/*
 			$scope.appsFormBuffer = null;
 			$scope.appsEdit = false;
-			$scope.appsShow = true;			
+			$scope.appsShow = true;
+*/	
 		};
    };
     

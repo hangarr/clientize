@@ -39,6 +39,7 @@
     "browser-request": "^0.3.3",
     "browserify-swap": "^0.2.1",
     "clientize-orchestrate": "git://github.com/hangarr/clientize-orchestrate.git",
+    "clientize-rak": "git://github.com/hangarr/clientize-rak.git",
     "express": "^4.10.7",
     "font-awesome": "^4.2.0",
     "hapi": "^8.1.0",

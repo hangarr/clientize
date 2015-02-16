@@ -2,7 +2,7 @@
 ## Clientize reverse-proxy
 Implements a Hapi-server based reverse-proxy that permits browser clients to make cross-domain requests to secured web-service APIs.
 
-The package includes an AngularJS 1.3 dashaboard client which can be used to examine the reverse-proxy configuration and create app configuration JSON documents to configure the reverse proxy to support one or more upstream hosts.
+The package includes an AngularJS 1.3 dashboard client which can be used to examine the reverse-proxy configuration and create JSON ("app") configuration documents to configure the reverse proxy to support one or more upstream hosts.
 
 ## Environment variables
 The main script `index.js` implements a full reverse-proxy and client dashboard application using the orchestrate.io cloud service as configuration storage. This implementation is configured with two sets of environment variables.
@@ -102,13 +102,13 @@ The `dashboard` section is a separate JSON configuration app document that speci
 The `db` section specifies the upstream configuration information the reverse-proxy uses server-side to access the configuration storage.
 
 ### "Apps" page
-This page is a simple editor for review the JSON configuration app documents in the configuration storage.
+This page is a simple editor for review the JSON app documents in the configuration storage.
 
-This page has two views, a read-only view that is a JSON array of all of the configuration app documents and an editor view that allows the user to modify or add documents as JSON text.
+This page has two views, a read-only view that is a JSON array of all of the app documents and an editor view that allows the user to modify or add documents as JSON text.
 
-The editor page includes features to validate edited configuration documents before they are uploaded to the configuration store and to generate random API keys as needed.
+The editor page includes features to validate edited app documents before they are uploaded to the configuration store and to generate random API keys as needed.
 
-If the proxy is configured as the minimal default pass-through proxy, the "Apps" page only provides the read-only view of the default configuration app document.
+If the proxy is configured as the minimal default pass-through proxy, the "Apps" page only provides the read-only view of the default app document.
 
 ## Additional Info
 ### Configuration App JSON-Schema
@@ -265,6 +265,7 @@ If the proxy is configured as the minimal default pass-through proxy, the "Apps"
 2. Add https support
 3. Support alternative to Orchestrate app configuration storage
 4. Add `angular.module` info to support minimization/uglification.
+
 ### Alternative to AngularJS client
 1. Possibly redo options and apps services to use "async" rather than AngularJS $q and/or promises
 2. Rewrite base functions to use XHR support directly rather than $http

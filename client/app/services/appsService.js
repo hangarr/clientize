@@ -191,6 +191,22 @@
 			err: function() {
 				return _err;
 			},
+			saveAll: function(newApps) {
+				var ops = {};
+				for(var i=0; i<_apps.length; i++) {
+					ops[_apps[i].app] = {
+						method: 'DELETE',
+						doc: null
+					};
+				};
+				for(var i=0; i<newApps.length; i++) {
+					ops[newApps[i].app] = {					
+						method: (typeof ops[newApps[i].app] === 'undefined' ? 'PUT' : 'PATCH'),
+						doc: newApps[i].app
+					};
+				};
+console.log(JSON.stringify(ops, null, '    '));
+			},
 			appTemplate: function () {
 				return _appTemplate;
 			},
