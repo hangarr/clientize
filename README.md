@@ -30,8 +30,9 @@ The minimal proxy configuration has a minimal dashboard appliction with login cr
 Additional environment variables configure the proxy for use with an external application configuration store.  The current release uses Orchestrate.io as the configuration store to provide an example of how to use Orchestrate.io from the client via the reverse-proxy.
 ```
 export CLIENTIZE_DB_OIOCOLLECTION=clientize								# Orchestrate.io collection for configuration storage
-export CLIENTIZE_DB_OIOKEY=769f2496-db5a-47ae-ba80-7d346ad76cd4			# API key for Orchestrate.io configuration collection
+export CLIENTIZE_DB_CONFIG												# Name of reverse-proxy configuration doc in CLIENTIZE_DB_OIOCOLLECTION
 export CLIENTIZE_DB_APP=clientize-demo									# Configuration app name in configuration storage
+export CLIENTIZE_DB_OIOKEY=769f2496-db5a-47ae-ba80-7d346ad76cd4			# API key for Orchestrate.io configuration collection
 #
 export CLIENTIZE_DASHBOARD_LOGIN=clientizeit							# Optional login credential for Dashboard App
 export CLIENTIZE_DASHBOARD_KEY=nGY_yYMWd_Ua								# Dashboard client facing API reverse-proxy key
@@ -51,23 +52,31 @@ As with the minimal configuration, the `CLIENTIZE_PROXY_*` variables specify the
 ## Reverse-Proxy Configuration Apps
 The fully-configurable reverse-proxy is configured with an application JSON document. Multiple documents can be stored in the configuration store. Future revisions will support other JSON configuration document schemes.
 
-A configuration document has the following items:
+A configuration document includes one or more configuration apps (set of options) and has the following items:
 ```
 {
-    "app": "// application name specified for CLIENTIZE_DB_APP",
-    "key": "// reverse-proxy client API key for CLIENTIZE_PROXY_KEY",
-    "routes": [
+    apps: [
         {
-            "method": "// upstream server endpoint HTTP methods ('GET' or ['GET', 'POST', ...] or *)",
-            "path": "// client facing endpoint formed as '/prefix/upstream-path'",
-            "protocol": "// 'http' or 'https'",
-            "host": "// upstream server name",
-            "port": "//upstream server port expressed as a number not a string",
-            "username": "// upstream server Basic mode auth credential, e.g. CLIENTIZE_PROXY_OIOKEY",
-            "password": "// upstream server Basic mode auth credential, typically blank",
-            "bearer": "// upstream server Bearer mode credential, (not yet implemented)",
-            "strip": "// Boolean 'true' to strip prefix from URL, 'false' to strip prefix from URL",
-            "prefix": "// prefix for client facing path '/prefix/upstream-path'"
+            "app": "// application name specified for CLIENTIZE_DB_APP",
+            "key": "// reverse-proxy client API key for CLIENTIZE_PROXY_KEY",
+            "routes": [
+                {
+                    "method": "// upstream server endpoint HTTP methods ('GET' or ['GET', 'POST', ...] or *)",
+                    "path": "// client facing endpoint formed as '/prefix/upstream-path'",
+                    "protocol": "// 'http' or 'https'",
+                    "host": "// upstream server name",
+                    "port": "//upstream server port expressed as a number not a string",
+                    "username": "// upstream server Basic mode auth credential, e.g. CLIENTIZE_PROXY_OIOKEY",
+                    "password": "// upstream server Basic mode auth credential, typically blank",
+                    "bearer": "// upstream server Bearer mode credential, (not yet implemented)",
+                    "strip": "// Boolean 'true' to strip prefix from URL, 'false' to strip prefix from URL",
+                    "prefix": "// prefix for client facing path '/prefix/upstream-path'"
+               }
+            ]
+        },
+            ...
+        {
+            "app": "// another application name specified for CLIENTIZE_DB_APP",
         }
     ]
 }
@@ -114,160 +123,128 @@ If the proxy is configured as the minimal default pass-through proxy, the "Apps"
 ### Configuration App JSON-Schema
 ```
 {
-    "title": "apps schema",
-    "type": "array",
-    "items": {
-        "type": "object",
-        "properties": {
-            "app": {
-                "type": "string"
-            },
-            "key": {
-                "type": "string"
-            },
-            "routes": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "method": {
-                            "oneOf": [
+    title: 'apps schema',
+    type: 'object',
+    properties: {
+        apps: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    app: { type: 'string' },
+                    key: { type: 'string' },
+                    routes: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                method: {
+                                    oneOf: [
+                                        {
+                                            type: 'string',
+                                            enum: [ '*', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS' ]
+                                        },
+                                        {
+                                            type: 'array',
+                                            items: {
+                                                type: 'string',
+                                                enum: [ 'GET','POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS' ]                                        
+                                            },
+                                            additionalItems: false
+                                        }
+                                    ]
+                                },
+                                path: {
+                                    pattern: '^((\/[^\/]+)+)$',
+                                    type: 'string'
+                                },
+                                protocol: {
+                                    type: 'string',
+                                    enum: [
+                                        'http',
+                                        'https'
+                                    ]
+                                },
+                                host: {
+                                    type: 'string',
+                                    format: 'hostname'
+                                },
+                                port: {
+                                    type: [ 'number', 'null' ]
+                                },
+                                username: {
+                                    type: [ 'string' , 'null' ]
+                                },
+                                password: {
+                                    type: [ 'string' , 'null' ]
+                                },
+                                bearer: {
+                                    type: [ 'string' , 'null' ]
+                                },
+                                strip: {
+                                    type: [ 'boolean', 'null' ]
+                                },
+                                prefix: {
+                                    pattern: '^((\/[^\/]+)+)$',
+                                    type: [ 'string', 'null' ]
+                                }
+                            },
+                            additionalProperties: false,
+                            required: [ 'method', 'path', 'protocol', 'host' ],
+
+                            oneOf: [
                                 {
-                                    "type": "string",
-                                    "enum": [
-                                        "*",
-                                        "GET",
-                                        "POST",
-                                        "PUT",
-                                        "PATCH",
-                                        "DELETE",
-                                        "OPTIONS"
+                                    anyOf: [
+                                        { type: 'object', required: [ 'username' ] },
+                                        { type: 'object', required: [ 'password' ] }
                                     ]
                                 },
                                 {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string",
-                                        "enum": [
-                                            "GET",
-                                            "POST",
-                                            "PUT",
-                                            "PATCH",
-                                            "DELETE",
-                                            "OPTIONS"
-                                        ]
-                                    },
-                                    "additionalItems": false
+                                    type: 'object',
+                                    required: [ 'bearer' ]
                                 }
                             ]
+
                         },
-                        "path": {
-                            "pattern": "^((/[^/]+)+)$",
-                            "type": "string"
-                        },
-                        "protocol": {
-                            "type": "string",
-                            "enum": [
-                                "http",
-                                "https"
-                            ]
-                        },
-                        "host": {
-                            "type": "string",
-                            "format": "hostname"
-                        },
-                        "port": {
-                            "type": [
-                                "number",
-                                "null"
-                            ]
-                        },
-                        "username": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        },
-                        "password": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        },
-                        "bearer": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        },
-                        "strip": {
-                            "type": [
-                                "boolean",
-                                "null"
-                            ]
-                        },
-                        "prefix": {
-                            "pattern": "^((/[^/]+)+)$",
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "method",
-                        "path",
-                        "protocol",
-                        "host"
-                    ],
-                    "oneOf": [
-                        {
-                            "anyOf": [
-                                {
-                                    "type": "object",
-                                    "required": [
-                                        "username"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "required": [
-                                        "password"
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "type": "object",
-                            "required": [
-                                "bearer"
-                            ]
-                        }
-                    ]
+                        additionalItems: false,
+                    }
                 },
-                "additionalItems": false
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "app",
-            "routes"
-        ]
+                additionalProperties: false,
+                required: [ 'app', 'routes' ],
+            },
+            additionalItems: false,
+        }
     },
-    "additionalItems": false
-}
+    additionalProperties: false,
+    required: ['apps']
+};
 ```
 
-## Things to do
-### General
-1. Modify to support other dashboard login methods but avoid cookie-based session authorization
-2. Add https support
-3. Support alternative to Orchestrate app configuration storage
-4. Add `angular.module` info to support minimization/uglification.
+## Notes:
+### AngularJS and Promises
+The digest mechanism in AngularJS can interact with ES6 promises pakages in unpredictable ways. The AngularJS 1.3 `$q` promise is designed specifically to work properly with the AngularJS digest mechanism.
 
-### Alternative to AngularJS client
-1. Possibly redo options and apps services to use "async" rather than AngularJS $q and/or promises
-2. Rewrite base functions to use XHR support directly rather than $http
-3. Modify controller functions to use a local context that just gets mapped to AngularJS $scope
+The orchestrate/clientize-orchestrate client is based on Kew promises.  It appears to work properly with testing so far.
+
+## Planned changes
+### Testing
+1. Develop in-brower client and server side unit tests.
+2. Add end-to-end tests.
+
+### Reverse-proxy server
+1. Add https support.
+2. Support additional storage options for proxy app configuration documents.
+
+### AngularJS dashboard client
+1. Modify the dashboard client to support other dashboard login methods but avoid cookie-based session authorization.
+2. Support minimization/uglification by adding the standard AngularJS parameter naming info to the `angular.module` declarations.
+
+### Orchestrate/clientize-orchestrate clients
+1. Combine the orchestrate/clientize-orchestrate packages into a single package that works client and server side.
+2. Rewrite the combined package using ECMAScript 6 promises.
+3. Redesign to allow use of any EMCAScript 6 promise library including AngularJS `$q`.
+
+### Support for alternatives to AngularJS client (e.g. Backbone.js, Ember.js)
+1. Rewrite the base functions to use XHR support directly rather than `$http`.
+2. Modify the controller functions to use a local context that gets mapped to AngularJS `$scope`.
 
