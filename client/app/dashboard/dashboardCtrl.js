@@ -21,21 +21,22 @@
 		$scope.optionsShow = false;
 		$scope.optionsLoading = true;
 		
-		OptionsService.getInitialized()
-		.then( function(options) {
-			$scope.optionsLoading = false;
-			$scope.optionsShow = true;
-			$scope.options = options;
-			$scope.proxyOptions = JSON.stringify($scope.options, null, '    ');
-		}, function(err) {
-			$scope.optionsLoading = false;
-			$scope.optionsShow = true;
-			$scope.proxyOptions = err + '\n ' + JSON.stringify(OptionsService.response(), null, '    ');
-		});
-		
-		$scope.logout = function() {
-
+		$scope.load = function() {
+			OptionsService.getInitialized()
+			.then( function(options) {
+				$scope.optionsLoading = false;
+				$scope.optionsShow = true;
+				$scope.options = options;
+				$scope.proxyOptions = JSON.stringify($scope.options, null, '    ');
+			}, function(err) {
+				$scope.optionsLoading = false;
+				$scope.optionsShow = true;
+				$scope.proxyOptions = err + '\n ' + JSON.stringify(OptionsService.response(), null, '    ');
+			});
 		};
+		$scope.load();
+
+		$scope.logout = function() {};
     };
     
     module.exports = dashboardCtrl;

@@ -13,11 +13,10 @@
 		
 		$scope.appsShow = false;
 		$scope.appsEdit = false;
-		$scope.appsLoading = true;
+		$scope.appsLoading = false;
 
 		$scope.appTemplate = AppsService.appTemplate();
-		$scope.appSchema = AppsService.appSchema(), null;
-		$scope.appsValidator = AppsService.appsValidate();
+		$scope.appsSchema = AppsService.appsSchema(), null;
 	
 		// support for Template modal
 		$scope.openInfo = function() {
@@ -41,24 +40,28 @@
 			});
 		};
 		
-		AppsService.getInitialized()
-		.then( function(apps) {
-			$scope.appsLoading = false;
-			$scope.appsShow = true;
-			$scope.apps = JSON.stringify(apps, null, '    ');
-		}, function(failed) {
-			$scope.appsLoading = false;
-			$scope.appsShow = true;
-			$scope.appsErr = failed + (AppsService.err() ? ':\n ' + AppsService.err() : '');
-			$scope.apps = null;
-		});
+		$scope.load = function() {
+			$scope.appsShow = false;
+			$scope.appsEdit = false;
+			$scope.appsLoading = true;
+			return AppsService.get()
+			.then( function(apps) {
+				$scope.appsLoading = false;
+				$scope.apps = apps;
+				$scope.appsStatus = '';
+				$scope.appsShow = true;
+			}, function(fail) {
+				$scope.appsLoading = false;
+				$scope.apps = '';
+				$scope.appsStatus = fail;
+				$scope.appsShow = true;
+			});
+		};
+		$scope.load();
 		
 		// fill the edit buffer and open the editor
 		$scope.edit = function() {
-			if($scope.apps === null)
-				return;
-
-			$scope.appsFormBuffer = JSON.stringify(JSON.parse($scope.apps), null, '    ');
+			$scope.appsFormBuffer = JSON.stringify($scope.apps, null, '    ');
 			$scope.appsShow = false;
 			$scope.appsEdit = true;			
 		};
@@ -72,21 +75,28 @@
 		
 		// validate the contents of the edit buffer
 		$scope.validate = function() {
-			$scope.validationResults = $scope.appsValidator($scope.appsFormBuffer);
+			$scope.validationResults = AppsService.appsValidate($scope.appsFormBuffer);
+			$scope.appsEditStatus = $scope.validationResults.validation;
 
 			return $scope.validationResults.validation.valid;
 		};
 		
-		$scope.saveApp = function() {
+		$scope.saveDoc = function() {
 			if(!$scope.validate())
 				return;
 
-			AppsService.saveAll($scope.validationResults.js);
-/*
-			$scope.appsFormBuffer = null;
+			$scope.appsShow = false;
 			$scope.appsEdit = false;
-			$scope.appsShow = true;
-*/	
+			$scope.appsLoading = true;
+			AppsService.put($scope.validationResults.js)
+			.then(function(result) {
+				$scope.appsFormBuffer = null;
+				return $scope.load();
+			}, function(fail) {
+				$scope.appsLoading = false;
+				$scope.appsEditStatus = fail;
+				$scope.appsEdit = true;			
+			});		
 		};
    };
     

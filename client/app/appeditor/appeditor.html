@@ -50,7 +50,7 @@
 			<div class="row row-spacer">
 				<div class="col-xs-1"></div>
 				<div class="col-xs-10">
-					<span class="pull-right" ng-if="apps">
+					<span class="pull-right">
 						<button type="button" class="btn btn-default clbtn-fa clbtn" ng-click="edit()"><span><i class="fa fa-pencil"></i></span></button>
 						<button type="button" class="btn clbtn-info" ng-click="openInfo()"><span><i class="fa fa-info-circle"></i></span></button>
 					</span>
@@ -60,15 +60,21 @@
 			<div class="row row-spacer" ng-cloak>
 				<div class="col-xs-1"></div>
 				<div class="col-xs-10">
-					<div ng-if="apps"><pre class="code-block text-block-40">{{apps}}</pre></div>
-					<div ng-if="apps === null"><pre class="code-block text-block-40">{{appsErr}}</pre></div>
+					<pre class="code-block text-block-40">{{JSON.stringify(apps, null, '    ')}}</pre>
 				</div>
 				<div class="col-xs-1"></div>
 			</div>
 		</form>
+		<div class="row row-spacer" ng-cloak>
+			<div class="col-xs-1"></div>
+			<div class="col-xs-10">
+				<pre class="code-block text-block-20">{{JSON.stringify(appsStatus, null, '    ')}}</pre>
+			</div>
+			<div class="col-xs-1"></div>
+		</div>
 	</div>
 	<div ng-if="appsEdit">
-		<form role="form" ng-submit="saveApp()">
+		<form role="form" ng-submit="saveDoc()">
 			<div class="row row-spacer">
 				<div class="col-xs-1"></div>
 				<div class="col-xs-10">
@@ -93,9 +99,7 @@
 		<div class="row row-spacer" ng-cloak>
 			<div class="col-xs-1"></div>
 			<div class="col-xs-10">
-				<div>
-					<pre class="code-block text-block-20">{{JSON.stringify(validationResults.validation, null, '    ')}}</pre>
-				</div>
+				<pre class="code-block text-block-20">{{JSON.stringify(appsEditStatus, null, '    ')}}</pre>
 			</div>
 			<div class="col-xs-1"></div>
 		</div>

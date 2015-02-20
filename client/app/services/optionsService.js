@@ -5,8 +5,10 @@
 	'use strict';
 	
 	var angular = window.angular;
-
+	
 	function optionsService($http, $location, $q) {
+
+		var Promise = require('clientize-rak').angular($q);
 		
 		var HOST = $location.host() + (typeof $location.port() === 'undefined' ? '' : ':' + $location.port());
 		var API = 'http://' + HOST + '/options';
@@ -17,44 +19,38 @@
 			responseType: 'json',
 			params: null
 		};
-		
-		var _response;
-		
+
 		// Proxy configuration initialization promise constructor 
 		// Returns an initialization function that returns a promise object
-		function OptionsInitializer(url, config) {
-			return $q(function(resolve, reject) {
-				$http.get(url, config)
-				.then(function(response) {
-					_response = response;
-					if(_response.data)
-						resolve(_response.data);
-					else
-						$q.reject('No current proxy configuration data');
-				}, function(response) {
-					_response = response;
-					reject('Could not load current proxy configuration');
-				});
+		function loadOptions(url, config) {
+			// Proxy configuration initialization promise constructor 
+			// Returns an initialization function that returns a promise object
+			return $http.get(url, config)
+			.then(function(result) {
+				if(result.data)
+					return result.data;
+				else
+					Promise.reject('No current proxy configuration data');
+			}, function(fail) {
+				return 'Could not load current proxy configuration';
 			});
 		};
 
-		var _initializedPromise = OptionsInitializer(API, httpConfig);
-
+		var _initializedPromise;
 		var optionsObj = {
 			get: function() {
-				_initializedPromise = OptionsInitializer(API, httpConfig);
+				_initializedPromise = loadOptions(API, httpConfig);
 				return _initializedPromise;
 			},
 			getInitialized: function() {
 				return _initializedPromise;
 			},
-			response: function() {
-				return _response;
-			}
-		};			
+		};
+
+		optionsObj.get();
 
 		return optionsObj;
 	};
-	
+		
 	module.exports = optionsService;
 }).call(this);

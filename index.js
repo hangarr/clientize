@@ -5,7 +5,8 @@
  * CLIENTIZE_HOST				= Name of clientize proxy host (optional)
  * CLIENTIZE_PORT				= Host port (optional)
  * CLIENTIZE_DB_OIOCOLLECTION	= Orchestrate.io collection for configuration storage
- * CLIENTIZE_DB_APP				= Name of reverse-proxy configuration doc in CLIENTIZE_DB_OIOCOLLECTION
+ * CLIENTIZE_DB_CONFIG			= Name of reverse-proxy configuration doc in CLIENTIZE_DB_OIOCOLLECTION
+ * CLIENTIZE_DB_APP				= Name of reverse-proxy configuration app in CLIENTIZE_DB_CONFIG doc
  * CLIENTIZE_DB_OIOKEY			= Orchestrate.io API key for reverse-proxy configuration storage
  * CLIENTIZE_PROXY_OIOKEY		= Orchestrate.io API key for reverse-proxy
  * CLIENTIZE_PROXY_KEY			= Client application key for reverse-proxy
@@ -32,6 +33,7 @@
 		PORT: (process.env.CLIENTIZE_PORT ? process.env.CLIENTIZE_PORT : 8000),
 		DB_OIOCOLLECTION: (process.env.CLIENTIZE_DB_OIOCOLLECTION 
 							? process.env.CLIENTIZE_DB_OIOCOLLECTION : 'clientize' ),
+		DB_CONFIG: (process.env.CLIENTIZE_DB_CONFIG ? process.env.CLIENTIZE_DB_CONFIG : 'clientize-config'),
 		DB_APP: (process.env.CLIENTIZE_DB_APP ? process.env.CLIENTIZE_DB_APP : 'clientize-passthrough'),
 		DB_OIOKEY: (process.env.CLIENTIZE_DB_OIOKEY	? process.env.CLIENTIZE_DB_OIOKEY : generatekey([8], '')),
 		PROXY_OIOKEY: (process.env.CLIENTIZE_PROXY_OIOKEY ?	process.env.CLIENTIZE_PROXY_OIOKEY
@@ -42,7 +44,8 @@
 		DASHBOARD_OIOKEY: (process.env.CLIENTIZE_DASHBOARD_OIOKEY ? process.env.CLIENTIZE_DASHBOARD_OIOKEY
 							: generatekey([8,4,4,4,12], '-'))
 	};
-	// add host and port if supplied
+
+	// add the host and port if supplied
 	if(process.env.CLIENTIZE_PROXY_HOST) {
 		clientizeOptions.PROXY_HOST = process.env.CLIENTIZE_PROXY_HOST;
 		if(process.env.CLIENTIZE_PROXY_PORT) 
@@ -53,6 +56,7 @@
 		clientizeOptions.PROXY_PORT = clientizeOptions.PORT;
 	}
 console.log(clientizeOptions);
+
 	// These are the full reverse proxy configuration options
 	var defaultOptions = {
 		connection: {
@@ -74,7 +78,8 @@ console.log(clientizeOptions);
 				prefix: '/'+ clientizeOptions.PROXY_HOST + '/' + clientizeOptions.DB_APP
 			}]
 		}
-    };	
+    };
+	
 	// add the upstream host port if supplied
 	if(clientizeOptions.PROXY_PORT)
 		defaultOptions.proxy.port = clientizeOptions.PROXY_PORT;
@@ -119,12 +124,29 @@ console.log(clientizeOptions);
 
 	// Add the direct access info for the configuration DB 
 	// NOTE: Although we have default values we don't use them when environment values aren't supplied
-	if(process.env.CLIENTIZE_DB_OIOCOLLECTION && process.env.CLIENTIZE_DB_APP && process.env.CLIENTIZE_DB_OIOKEY) {
+	if(process.env.CLIENTIZE_DB_OIOCOLLECTION && process.env.CLIENTIZE_DB_CONFIG
+			&& process.env.CLIENTIZE_DB_APP && process.env.CLIENTIZE_DB_OIOKEY) {
 		defaultOptions.db = {
 			collection: clientizeOptions.DB_OIOCOLLECTION,
+			config: clientizeOptions.DB_CONFIG,
 			app: clientizeOptions.DB_APP,
 			key: clientizeOptions.DB_OIOKEY				
 		};
+	};
+	
+	// Search for app object in configuration document
+	function selectApp(doc, app) {
+		try {
+			for(var i=0; i<doc.apps.length; i++) {
+				if(doc.apps[i].app === app)
+					return doc.apps[i];
+			}			
+		}
+		catch(e) {
+			return;
+		};
+		
+		return;
 	};
 
 	var db, rp, cdb, options;
@@ -132,13 +154,23 @@ console.log(clientizeOptions);
 	    function(callback) {
 	    	if(defaultOptions.db) {
 	    		db = oio(defaultOptions.db.key);
-	    		db.search(defaultOptions.db.collection, 'app:"' + defaultOptions.db.app + '"')
+//	    		db.search(defaultOptions.db.collection, 'app:"' + defaultOptions.db.app + '"')
+	    		db.get(defaultOptions.db.collection, defaultOptions.db.config)
 	        	.then(function(result) {
 	        		options = Hoek.clone(defaultOptions);
-	        		options.proxy = Hoek.clone(result.body.results[0].value);
-		    		console.log('Retrieved proxy configuration:');
-	        		console.log(JSON.stringify(options, null, '\t'));
-	        		callback(null);
+//	        		options.proxy = Hoek.clone(result.body.results[0].value);
+	        		var app = selectApp(result.body, defaultOptions.db.app);
+	        		if(app) {
+	        			options.proxy = Hoek.clone(app);
+	        			console.log('Retrieved proxy configuration:');
+	        			console.log(JSON.stringify(options, null, '\t'));
+	        			callback(null);
+	        		}
+	        		else {
+	        			var err = 'App not found in application configuration document';
+	        			console.log(err);
+	        			callback(err);
+	        		}
 	        	})
 	        	.fail(function(err) {
 	        		console.log('Could not retrieve proxy configuration');

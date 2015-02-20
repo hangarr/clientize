@@ -7,6 +7,8 @@
 	var angular = window.angular;
 
 	function appsService($http, $location, $q, OptionsService) {
+
+		var Promise = require('clientize-rak').angular($q);
 		
 		var oio = require('clientize-orchestrate')
 		  , tv4 = require('tv4');
@@ -28,158 +30,222 @@
 		    }]
 		}];
 	
-		var _appSchema = {
+		var _appsSchema = {
 //			$schema: 'http:\/\/json-schema.org\/draft-04\/schema#',
 			title: 'apps schema',
-			type: "array",
-			items: {
-				type: 'object',
-				properties: {
-					app: { type: 'string' },
-					key: { type: 'string' },
-					routes: {
-						type: 'array',
-						items: {
-							type: 'object',
-							properties: {
-								method: {
+			type: 'object',
+			properties: {
+				apps: {
+					type: 'array',
+					items: {
+						type: 'object',
+						properties: {
+							app: { type: 'string' },
+							key: { type: 'string' },
+							routes: {
+								type: 'array',
+								items: {
+									type: 'object',
+									properties: {
+										method: {
+											oneOf: [
+											    {
+											    	type: 'string',
+											    	enum: [ '*', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS' ]
+											    },
+											    {
+											    	type: 'array',
+											    	items: {
+											    		type: 'string',
+											    		enum: [ 'GET','POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS' ]							    		
+											    	},
+											    	additionalItems: false
+											    }
+											]
+										},
+										path: {
+											pattern: '^((\/[^\/]+)+)$',
+											type: 'string'
+										},
+										protocol: {
+											type: 'string',
+											enum: [
+						            	        'http',
+						            	        'https'
+						            	    ]
+										},
+										host: {
+											type: 'string',
+											format: 'hostname'
+										},
+										port: {
+											type: [ 'number', 'null' ]
+										},
+										username: {
+										    type: [ 'string' , 'null' ]
+										},
+										password: {
+										    type: [ 'string' , 'null' ]
+										},
+										bearer: {
+										    type: [ 'string' , 'null' ]
+										},
+										strip: {
+											type: [ 'boolean', 'null' ]
+										},
+										prefix: {
+											pattern: '^((\/[^\/]+)+)$',
+											type: [ 'string', 'null' ]
+										}
+									},
+									additionalProperties: false,
+									required: [ 'method', 'path', 'protocol', 'host' ],
+
 									oneOf: [
 									    {
-									    	type: 'string',
-									    	enum: [ '*', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS' ]
+										    anyOf: [
+											    { type: 'object', required: [ 'username' ] },
+											    { type: 'object', required: [ 'password' ] }
+											]
 									    },
-										{
-									    	type: 'array',
-									    	items: {
-									    		type: 'string',
-									    		enum: [ 'GET','POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS' ]							    		
-									    	},
-									    	additionalItems: false
+									    {
+										    type: 'object',
+										    required: [ 'bearer' ]
 									    }
 									]
-								},
-								path: {
-									pattern: '^((\/[^\/]+)+)$',
-									type: 'string'
-								},
-								protocol: {
-									type: 'string',
-									enum: [
-				            	        'http',
-				            	        'https'
-				            	    ]
-								},
-								host: {
-									type: 'string',
-									format: 'hostname'
-								},
-								port: {
-									type: [ 'number', 'null' ]
-								},
-								username: {
-								    type: [ 'string' , 'null' ]
-								},
-								password: {
-								    type: [ 'string' , 'null' ]
-								},
-								bearer: {
-								    type: [ 'string' , 'null' ]
-								},
-								strip: {
-									type: [ 'boolean', 'null' ]
-								},
-								prefix: {
-									pattern: '^((\/[^\/]+)+)$',
-									type: [ 'string', 'null' ]
-								}
-							},
-							additionalProperties: false,
-							required: [ 'method', 'path', 'protocol', 'host' ],
 
-							oneOf: [
-							    {
-								    anyOf: [
-									    { type: 'object', required: [ 'username' ] },
-									    { type: 'object', required: [ 'password' ] }
-									]
-							    },
-							    {
-								    type: 'object',
-								    required: [ 'bearer' ]
-							    }
-							]
-
+								},
+								additionalItems: false,
+							}
 						},
-						additionalItems: false,
-					}
-				},
-				additionalProperties: false,
-				required: [ "app", "routes" ],
-			},
-			additionalItems: false
-		};
-		
-		var _apps, _db, _response, _err;
-		
-		// This could be broken out into a separate module determined by the configuration store
-		// Because we are both using and demonstrating a client-side application
-		// or the reverse proxy we don't want to put this server-side
-		function filterApps(response) {
-			var apps = [];
-			for(var i=0; i<response.body.results.length; i++) {
-				apps.push(response.body.results[i].value);
-			}
-			
-			return apps;
-		};
-	
-		// App list initialization function constructor
-		// Returns an initialization function that returns a promise object
-		function QueryInitializer(options) {
-			return $q(function(resolve, reject) {
-				if(!options.db || !options.dashboard.app || !options.dashboard.key) {
-					_response = null;
-					_apps = null;
-					reject('App storage not configured');
-					return;
+						additionalProperties: false,
+						required: [ 'app', 'routes' ],
+					},
+					additionalItems: false,
 				}
-				var opts = {
-				    	protocol: 'http',
-				    	host: options.connection.host,
-				    	port: options.connection.port,
-				    	prefix: '/api.orchestrate.io/' + options.dashboard.app,
-//				    	token: options.dashboard.key + ':',
-				    	token: { bearer: options.dashboard.key }
-				};
-				_db = oio(opts);
-		    	_db.search(options.db.collection, '*')
-		    	.then(function(response) {
-		    		_response = response;
-	        		_apps = filterApps(_response);
-		    		resolve(_apps);
-		    	})
-		    	.fail(function(err) {
-		    		_err = err;
-		    		reject('Could not load current proxy applications list');
-		    	});	    	
-			});
+			},
+			additionalProperties: false,
+			required: ['apps']
 		};
+		
+		// Initialize storage accessor for configuration document
+		function dbOpts(options) {
+			if(!options.db || !options.dashboard.app || !options.dashboard.key) {
+				_response = null;
+				_apps = null;
+			}
+			else return {
+			    	protocol: 'http',
+			    	host: options.connection.host,
+			    	port: options.connection.port,
+			    	prefix: '/api.orchestrate.io/' + options.dashboard.app,
+//			    	token: options.dashboard.key + ':',
+			    	token: { bearer: options.dashboard.key }
+			};
+		};
+
+
+		var _apps, _response;
 		
 		// Apps list initializer
 		// Returns a promise object
-		function AppsInitializer() {
+		function loadDoc() {
 			return OptionsService.getInitialized().then(function(options) {
-				return QueryInitializer(options);
-			}, function(failed) {
-				return failed;
+				return new Promise(function(resolve, reject) {
+					var opts = dbOpts(options);
+					if(!opts) {
+						reject('App storage not configured');
+						return;
+					};
+					
+					oio(opts).get(options.db.collection, options.db.config)
+					.then(function(response) {
+						_response = response;
+						_apps = _response.body;
+						resolve(_apps);
+					})
+					.fail(function(err) {
+			    		reject({
+			    			message: 'Could not load proxy applications list',
+			    			err: err
+			    		});
+					});	    	
+				});
+			}, function(fail) {
+				return fail;
 			});			
 		};
 
-		var _initializedPromise = AppsInitializer();
+		
+		// Configuration document validator
+		// Returns validation result object
+		function validateDoc(json) {
+			var _json = json.replace(/\s+/g, ' ');
+			try {
+				var js = JSON.parse(_json);
+			}
+			catch (e) {
+				return {
+					js: js,
+					json: _json,
+					validation: {
+						valid: false,
+						errors: e
+					}
+				};
+			};
+			var validation = tv4.freshApi().validateMultiple(js, _appsSchema);
+			for(var i=0; i<validation.errors.length; i++) {
+				delete validation.errors[i].stack;
+			};
+			return {
+				js: js,
+				json: _json,
+				validation: validation
+			};
+		};			
+
+		
+		// Save the app configuration document
+		// Returns a promise
+		function storeDoc(apps) {
+			return OptionsService.getInitialized().then(function(options) {
+				return new Promise(function(resolve, reject) {
+					var opts = dbOpts(options);
+					if(!opts) {
+						reject('Apps storage not configured');
+						return;
+					};
+					
+					var db = oio(opts);
+					if(_apps)
+						var dbMethod = db.merge;
+					else
+						var dbMethod = db.put;
+					dbMethod.call(db, options.db.collection, options.db.config, apps)
+					.then(function(response) {
+						resolve({
+							message: 'Stored proxy applications list',
+							response: response
+						});
+					})
+					.fail(function(err) {
+						reject({
+							message: 'Could not store proxy applications list',
+							err: err
+						});
+					});	    	
+				});
+			}, function(fail) {
+				return fail;
+			});			
+		};
+	
+		var _initializedPromise;
 
 		var appsObj = {
-			getAll: function() {
-				_initializedPromise = AppsInitializer();
+			get: function() {
+				_initializedPromise = loadDoc();
 				return _initializedPromise;				
 			},
 			getInitialized: function() {
@@ -188,61 +254,21 @@
 			response: function() {
 				return _response;
 			},
-			err: function() {
-				return _err;
-			},
-			saveAll: function(newApps) {
-				var ops = {};
-				for(var i=0; i<_apps.length; i++) {
-					ops[_apps[i].app] = {
-						method: 'DELETE',
-						doc: null
-					};
-				};
-				for(var i=0; i<newApps.length; i++) {
-					ops[newApps[i].app] = {					
-						method: (typeof ops[newApps[i].app] === 'undefined' ? 'PUT' : 'PATCH'),
-						doc: newApps[i].app
-					};
-				};
-console.log(JSON.stringify(ops, null, '    '));
-			},
 			appTemplate: function () {
 				return _appTemplate;
 			},
-			appSchema: function() {
-				return _appSchema;
+			appsSchema: function() {
+				return _appsSchema;
 			},
-			appsValidate: function() {
-				var _tv4validator = tv4.freshApi();
-				var _schema = _appSchema;
-				return function(json) {
-					var _json = json.replace(/\s+/g, ' ');
-					try {
-						var js = JSON.parse(_json);
-					}
-					catch (e) {
-						return {
-							js: js,
-							json: json,
-							validation: {
-								valid: false,
-								errors: e
-							}
-						};
-					};
-					var validation = _tv4validator.validateMultiple(js, _schema);
-					for(var i=0; i<validation.errors.length; i++) {
-						delete validation.errors[i].stack;
-					};
-					return {
-						js: js,
-						json: _json,
-						validation: validation
-					};
-				};
+			appsValidate: function(json) {
+				return validateDoc(json);
+			},
+			put: function(newApps) {
+				return storeDoc(newApps);
 			}
 		};			
+
+//		appsObj.get();
 
 		return appsObj;
 

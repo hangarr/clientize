@@ -61,7 +61,7 @@
 		this.server = new Hapi.Server(this.options.server);
 	};
 
-	
+	// Configures authentication schemes, strategies and routes
 	ReverseProxy.prototype.configure = function(callback) {
 		var that = this;
 		
@@ -69,6 +69,8 @@
 		
 		var that = this;
 
+		// Build up array of configuration actions for Hapi server object
+		// The authorization schemes
 		var authSchemes = [
 		    function(callback) {
 		    	that.server.register(HapiAuthBasic, function(err) {
@@ -82,6 +84,7 @@
 			}
 		];
 		
+		// The dashboard basic authorization mode login API
 		var routesLogin = [
 			function(callback) {
 				that.server.auth.strategy('dashlogin', 'basic', that.authBasicOptions(that.options.dashboard.login));
@@ -93,6 +96,7 @@
 			}
 		];
 		
+		// The application reverse proxy authentication strategies and routes
 		var routesProxy = [
 			function(callback) {
 //				that.server.auth.strategy('apibearer', 'basic', that.authBasicOptions(that.options.proxy.key));
@@ -105,6 +109,7 @@
 			}
 		];
 	
+		// The dashboard reverse proxy authentication strategies and routes
 		var routesDashboard = [
 			function(callback) {
 //				that.server.auth.strategy('dashbearer', 'basic', that.authBasicOptions(that.options.dashboard.key));
@@ -117,6 +122,7 @@
 			}
 		];
 
+		// Build list of all the configuration tasks for async executor
 		var routeConfigs = authSchemes.concat(routesProxy);
 		if(typeof that.options.dashboard !== 'undefined'  && typeof that.options.dashboard.key !== 'undefined')
 			routeConfigs = routeConfigs.concat(routesDashboard);
@@ -296,7 +302,7 @@ console.log('token: ' + token);
 	
 	};
 	
-	// Adds app configuration reverse proxy endpoints
+	// Adds app configuration storage reverse proxy endpoints in configuration object
 	ReverseProxy.prototype.apps = function(strategy) {
 
 		// protected path to the reverse-proxy configuration storage
@@ -305,7 +311,7 @@ console.log('token: ' + token);
 		};		
 	};
 	
-	// Adds reverse-proxy endpoints to server
+	// Adds reverse-proxy endpoints to server in configurations options from stored configuration doc
 	ReverseProxy.prototype.proxy = function (strategy) {
 		// Provides a ping endpoint to test the credentials
 		this.server.route({

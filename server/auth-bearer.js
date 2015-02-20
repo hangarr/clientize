@@ -65,7 +65,7 @@ exports.register = function (server, options, next) {
                         return reply(Boom.badImplementation('Bad token string received for Bearer auth validation'), { log: { tags: 'token' } });
                     }
 //
-                    return reply.continue({ credentials: credentials });
+                    return reply['continue']({ credentials: credentials });
 //
                 });
             }
