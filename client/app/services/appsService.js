@@ -8,9 +8,11 @@
 
 	function appsService($http, $location, $q, OptionsService) {
 
-		var Promise = require('clientize-rak').angular($q);
+//		var Promise = require('clientize-rak').angular($q);
 		
-		var oio = require('clientize-orchestrate')
+//		var oio = require('clientize-orchestrate')
+		var Promise = require('clientize-rak').angular($q)
+		  , oio = require('clientize-orchestrate')(Promise)
 		  , tv4 = require('tv4');
 	
 		var _appTemplate = [{
@@ -163,13 +165,21 @@
 						_response = response;
 						_apps = _response.body;
 						resolve(_apps);
+/*
 					})
 					.fail(function(err) {
 			    		reject({
 			    			message: 'Could not load proxy applications list',
 			    			err: err
 			    		});
-					});	    	
+					});
+*/   	
+					}, function(err) {
+			    		reject({
+			    			message: 'Could not load proxy applications list',
+			    			err: err
+			    		});
+					});
 				});
 			}, function(fail) {
 				return fail;
@@ -228,13 +238,21 @@
 							message: 'Stored proxy applications list',
 							response: response
 						});
+/*
 					})
 					.fail(function(err) {
 						reject({
 							message: 'Could not store proxy applications list',
 							err: err
 						});
-					});	    	
+					});
+*/   	
+					}, function(err) {
+						reject({
+							message: 'Could not store proxy applications list',
+							err: err
+						});
+					});
 				});
 			}, function(fail) {
 				return fail;

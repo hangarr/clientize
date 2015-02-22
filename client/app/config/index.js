@@ -9,7 +9,7 @@
 	var routeConfig = require('./routeConfig.js');
 	
 	var rpappRouteConfig = angular.module('rpapp.routeConfig', [])
-		.config( routeConfig );
+		.config(['$routeProvider', '$locationProvider', routeConfig]);
 
 	module.exports = rpappRouteConfig;
 }).call(this);

@@ -9,7 +9,8 @@
 	var appeditorCtrl = require('./appeditorCtrl.js');
 	
 	var rpappAppEditor = angular.module('rpapp.appeditor', [])
-		.controller( 'AppEditorCtrl', appeditorCtrl );
+		.controller( 'AppEditorCtrl', ['$window', '$scope', '$log', '$modal', '$timeout', '$location', 
+		                                'AppsService', appeditorCtrl]);
 
 	module.exports = rpappAppEditor;
 }).call(this);

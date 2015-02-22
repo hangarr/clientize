@@ -1,11 +1,12 @@
 {
   "name": "clientize",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Wraps an authenticated server REST API with a client REST API",
   "main": "index.js",
   "scripts": {
     "test": "test",
+    "build-min": "npm run build && uglifyjs public/assets/js/main.js > public/assets/js/main.min.js",
     "build": "npm run build-copy && npm run build-templates && npm run build-bootstrap && npm run build-font-awesome && npm run build-js",
     "build-copy": "rm -f -r public && mkdir public && cp -R client/assets public",
     "build-templates": "/bin/zsh -c 'mkdir -p public/templates && cp client/*.html public && cp client/*/**/*.html public/templates'",
@@ -52,7 +53,8 @@
   },
   "devDependencies": {
     "browserify": "^8.1.0",
-    "orcup": "0.0.1"
+    "orcup": "0.0.1",
+    "uglify-js": "^2.4.16"
   },
   "browserify": {
     "transform": [

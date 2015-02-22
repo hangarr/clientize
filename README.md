@@ -224,7 +224,8 @@ If the proxy is configured as the minimal default pass-through proxy, the "Apps"
 ### AngularJS and Promises
 The digest mechanism in AngularJS can interact with ES6 promises pakages in unpredictable ways. The AngularJS 1.3 `$q` promise is designed specifically to work properly with the AngularJS digest mechanism.
 
-The orchestrate/clientize-orchestrate client is based on Kew promises.  It appears to work properly with testing so far.
+Before v1.4.0, the `orchestrate`/`clientize-orchestrate` client was based on `kew` promises.  It appeared to work properly with Firefox and Google Chrome, but was erratic on Safari.
+With v1.4.0, the `clientize-orchestrate` client was modified to use ECMAScript 6 promises and to use an ECMAScript 5 ES6 style promise library of the developer's choice.
 
 ## Planned changes
 ### Testing
@@ -237,12 +238,12 @@ The orchestrate/clientize-orchestrate client is based on Kew promises.  It appea
 
 ### AngularJS dashboard client
 1. Modify the dashboard client to support other dashboard login methods but avoid cookie-based session authorization.
-2. Support minimization/uglification by adding the standard AngularJS parameter naming info to the `angular.module` declarations.
+2. (Done v.0.2.0) Support minimization/uglification by adding the standard AngularJS parameter naming info to the `angular.module` declarations.
 
 ### Orchestrate/clientize-orchestrate clients
 1. Combine the orchestrate/clientize-orchestrate packages into a single package that works client and server side.
 2. Rewrite the combined package using ECMAScript 6 promises.
-3. Redesign to allow use of any EMCAScript 6 promise library including AngularJS `$q`.
+3. (Done v.0.2.0) Redesign to allow use of any EMCAScript 6 promise library including AngularJS `$q`.
 
 ### Support for alternatives to AngularJS client (e.g. Backbone.js, Ember.js)
 1. Rewrite the base functions to use XHR support directly rather than `$http`.

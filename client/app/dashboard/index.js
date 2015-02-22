@@ -9,7 +9,8 @@
 	var dashboardCtrl = require('./dashboardCtrl.js');
 	
 	var rpappDashboard = angular.module('rpapp.dashboard', [])
-		.controller( 'DashboardCtrl', dashboardCtrl );
+		.controller('DashboardCtrl', ['$window', '$scope', '$log', '$timeout', '$http', '$location',
+		                                'OptionsService', dashboardCtrl]);
 
 	module.exports = rpappDashboard;
 }).call(this);

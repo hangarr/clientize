@@ -26,7 +26,9 @@
 	  ,	Path = require('path')
 	  , assert = require('assert')
 	  , async = require('async')
-	  , oio = require('clientize-orchestrate');
+	  , Promise = require('bluebird')
+//	  , oio = require('clientize-orchestrate');
+	  , oio = require('clientize-orchestrate')(Promise);
 
 	var clientizeOptions = {
 		HOST: (process.env.CLIENTIZE_HOST ? process.env.CLIENTIZE_HOST : 'localhost'),
@@ -171,8 +173,14 @@ console.log(clientizeOptions);
 	        			console.log(err);
 	        			callback(err);
 	        		}
+/*
 	        	})
 	        	.fail(function(err) {
+	        		console.log('Could not retrieve proxy configuration');
+	        		callback(err);
+	        	});
+*/
+	        	}, function(err) {
 	        		console.log('Could not retrieve proxy configuration');
 	        		callback(err);
 	        	});
@@ -222,12 +230,19 @@ console.log(clientizeOptions);
 	    	.then(function() {
 	    		console.log('Reverse-proxied host ping successful');
 	    		callback(null);
+/*
 	    	})
 	    	.fail(function(err) {
 	    		console.log('Reversed-proxied host ping failed');
 	    		console.log(err.body);
 	    		callback(err);
-	    	});	    	
+	    	});
+*/  	
+	    	}, function(err) {
+	    		console.log('Reversed-proxied host ping failed');
+	    		console.log(err.body);
+	    		callback(err);
+	    	});
 	    }
 	], function(err, results) {
 		if(err) {
