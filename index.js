@@ -31,8 +31,10 @@
 	  , oio = require('clientize-orchestrate')(Promise);
 
 	var clientizeOptions = {
-		HOST: (process.env.CLIENTIZE_HOST ? process.env.CLIENTIZE_HOST : 'localhost'),
-		PORT: (process.env.CLIENTIZE_PORT ? process.env.CLIENTIZE_PORT : 8000),
+		HOST: (process.env.CLIENTIZE_HOST ? process.env.CLIENTIZE_HOST 
+				: (process.env.HOST ? process.env.HOST : 'localhost')),
+		PORT: (process.env.CLIENTIZE_PORT ? process.env.CLIENTIZE_PORT 
+				: (process.env.PORT ? parseInt(process.env.PORT) : 8000)),
 		DB_OIOCOLLECTION: (process.env.CLIENTIZE_DB_OIOCOLLECTION 
 							? process.env.CLIENTIZE_DB_OIOCOLLECTION : 'clientize' ),
 		DB_CONFIG: (process.env.CLIENTIZE_DB_CONFIG ? process.env.CLIENTIZE_DB_CONFIG : 'clientize-config'),
