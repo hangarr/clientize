@@ -4,3 +4,5 @@ node_modules/*
 .settings
 .project
 public/*
+default-proxy.env
+full-proxy.env

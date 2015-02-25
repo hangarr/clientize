@@ -12,7 +12,9 @@
     "build-templates": "/bin/zsh -c 'mkdir -p public/templates && cp client/*.html public && cp client/*/**/*.html public/templates'",
     "build-bootstrap": "cp -R node_modules/bootstrap/dist/css node_modules/bootstrap/dist/fonts public/assets",
     "build-font-awesome": "cp -R node_modules/font-awesome/css node_modules/font-awesome/fonts public/assets",
-    "build-js": "mkdir -p public/assets/js && BROWSERIFYSWAP_ENV='all' browserify client/app/app.js > public/assets/js/main.js"
+    "build-js": "mkdir -p public/assets/js && BROWSERIFYSWAP_ENV='all' browserify client/app/app.js > public/assets/js/main.js",
+    "predeploy": "npm run build-min",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
