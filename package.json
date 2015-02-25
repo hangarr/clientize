@@ -53,11 +53,11 @@
     "hoek": "^2.11.0",
     "kew": "^0.5.0-alpha.1",
     "tv4": "^1.1.9",
+    "uglify-js": "^2.4.16",
     "url": "^0.10.2"
   },
   "devDependencies": {
-    "orcup": "0.0.1",
-    "uglify-js": "^2.4.16"
+    "orcup": "0.0.1"
   },
   "browserify": {
     "transform": [
