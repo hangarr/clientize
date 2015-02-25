@@ -9,7 +9,7 @@
     "build-min": "npm run build && uglifyjs public/assets/js/main.js > public/assets/js/main.min.js",
     "build": "npm run build-copy && npm run build-templates && npm run build-bootstrap && npm run build-font-awesome && npm run build-js",
     "build-copy": "rm -f -r public && mkdir public && cp -R client/assets public",
-    "build-templates": "/bin/zsh -c 'mkdir -p public/templates && cp client/*.html public && cp client/*/**/*.html public/templates'",
+    "build-templates": "mkdir -p public/templates && cp client/*.html public && cp client/*/*/*.html public/templates",
     "build-bootstrap": "cp -R node_modules/bootstrap/dist/css node_modules/bootstrap/dist/fonts public/assets",
     "build-font-awesome": "cp -R node_modules/font-awesome/css node_modules/font-awesome/fonts public/assets",
     "build-js": "mkdir -p public/assets/js && BROWSERIFYSWAP_ENV='all' browserify client/app/app.js > public/assets/js/main.js",
