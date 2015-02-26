@@ -6,13 +6,23 @@ The package includes an AngularJS 1.3 dashboard client which can be used to exam
 
 ## Environment variables
 The main script `index.js` implements a full reverse-proxy and client dashboard application using the orchestrate.io cloud service as configuration storage. This implementation is configured with two sets of environment variables.
+### Client API
+This set of variables configures the dashboard app and client-facing API host
+```
+export CLIENTIZE_HOST=localhost											# Name of clientize proxy host (optional)
+export CLIENTIZE_PORT=8000												# Host port (optional)
+export CLIENTIZE_PROTOCOL=https											# Host http/https protocol (optional)
+```
+The example proxy will first look for `CLIENTIZE_HOST`, `CLIENTIZE_PORT`, and `CLIENTIZE_PROTOCOL` values. If they are not found, it will then look for `HOST`, `PORT`, and `PROTOCOL` values. It will use built in defaults if those are not found.
+IMPORTANT NOTE: The environment variable `CLIENTIZE_PROTOCOL` is the protocol of the application server seen by a browser or other application, not the protocol of the reverse proxy server.  The reverse proxy server for the moment only is an HTTP server and it is assumed it sits behind another webserver which can be an HTTP or HTTPS server.
 ### Default pass-through proxy
 This set of variables can be used to configure a basic pass-through reverse proxy
 ```
-export CLIENTIZE_PROXY_KEY=FBz_T8ega_rA									# optional client-facing API key
-export CLIENTIZE_PROXY_OIOKEY=1dbadb46-81ff-4bbb-a842-aa582566f86f		# upstream host API key
+export CLIENTIZE_PROXY_KEY=[Client key]									# optional client-facing API key
+export CLIENTIZE_PROXY_OIOKEY=[API key]									# upstream host API key
 export CLIENTIZE_PROXY_HOST=api.orchestrate.io							# upstream host API
 export CLIENTIZE_PROXY_PORT=8000										# optional upstream host port
+export CLIENTIZE_PROXY_PROTOCOL=https									# upstream host API protocol
 ```
 Assuming the proxy host is "proxy.com[:8000]" with the optional port, requests such as 
 ```
@@ -32,16 +42,17 @@ Additional environment variables configure the proxy for use with an external ap
 export CLIENTIZE_DB_OIOCOLLECTION=clientize								# Orchestrate.io collection for configuration storage
 export CLIENTIZE_DB_CONFIG												# Name of reverse-proxy configuration doc in CLIENTIZE_DB_OIOCOLLECTION
 export CLIENTIZE_DB_APP=clientize-demo									# Configuration app name in configuration storage
-export CLIENTIZE_DB_OIOKEY=769f2496-db5a-47ae-ba80-7d346ad76cd4			# API key for Orchestrate.io configuration collection
+export CLIENTIZE_DB_OIOKEY=[Config API Key]								# API key for Orchestrate.io configuration collection
 #
 export CLIENTIZE_DASHBOARD_LOGIN=clientizeit							# Optional login credential for Dashboard App
-export CLIENTIZE_DASHBOARD_KEY=nGY_yYMWd_Ua								# Dashboard client facing API reverse-proxy key
+export CLIENTIZE_DASHBOARD_KEY=[Dashboard API key]						# Dashboard client facing API reverse-proxy key
 export CLIENTIZE_DASHBOARD_OIOKEY=$CLIENTIZE_DB_OIOKEY					# Dashboard client upstream Orchestrate.io API key
 #
-export CLIENTIZE_PROXY_KEY=FBz_T8ega_rA									# default optional client-facing API key
-export CLIENTIZE_PROXY_OIOKEY=1dbadb46-81ff-4bbb-a842-aa582566f86f		# default upstream host API key
+export CLIENTIZE_PROXY_KEY=[Client key]									# default optional client-facing API key
+export CLIENTIZE_PROXY_OIOKEY=[API key]									# default upstream host API key
 export CLIENTIZE_PROXY_HOST=api.orchestrate.io							# default upstream host API
 export CLIENTIZE_PROXY_PORT=8000										# default optional upstream host port
+export CLIENTIZE_PROXY_PROTOCOL=https									# upstream host API protocol
 ```
 The `CLIENTIZE_DB_*` variables specify the Clientize configuration storage for server-side access by the reverse-proxy server.
 

@@ -11,7 +11,8 @@
 		var Promise = require('clientize-rak').angular($q);
 		
 		var HOST = $location.host() + (typeof $location.port() === 'undefined' ? '' : ':' + $location.port());
-		var API = 'http://' + HOST + '/options';
+//		var API = 'http://' + HOST + '/options';
+		var API = '/options';
 	
 		var httpConfig = {
 			headers: { 'Content-Type': 'application/json; charset=UTF-8'},

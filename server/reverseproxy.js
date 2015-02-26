@@ -46,7 +46,8 @@
 	  , HapiAuthBearerToken = require('./auth-bearer.js')
 	  , async = require('async')
 	  , ValidateBasic = require('./validate-basic')
-	  , MapUriBasic = require('./mapuri-basic');
+	  , MapUriBasic = require('./mapuri-basic')
+	  , Hoek = require('hoek');
 	
 	var corsConfig = {
 		additionalHeaders: ['X-Clientize-Authenticate']
@@ -65,7 +66,10 @@
 	ReverseProxy.prototype.configure = function(callback) {
 		var that = this;
 		
-		this.server.connection(this.options.connection);
+		this.server.connection(Hoek.clone({
+			host: this.options.connection.host,
+			port: this.options.connection.port
+		}));
 		
 		var that = this;
 

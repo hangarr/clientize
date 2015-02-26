@@ -137,7 +137,8 @@
 				_apps = null;
 			}
 			else return {
-			    	protocol: 'http',
+//			    	protocol: 'http',
+			    	protocol: options.connection.protocol,
 			    	host: options.connection.host,
 			    	port: options.connection.port,
 			    	prefix: '/api.orchestrate.io/' + options.dashboard.app,
@@ -238,6 +239,12 @@
 							message: 'Stored proxy applications list',
 							response: response
 						});
+					}, function(err) {
+						reject({
+							message: 'Could not store proxy applications list',
+							err: err
+						});
+					});
 /*
 					})
 					.fail(function(err) {
@@ -247,12 +254,6 @@
 						});
 					});
 */   	
-					}, function(err) {
-						reject({
-							message: 'Could not store proxy applications list',
-							err: err
-						});
-					});
 				});
 			}, function(fail) {
 				return fail;
@@ -264,7 +265,7 @@
 		var appsObj = {
 			get: function() {
 				_initializedPromise = loadDoc();
-				return _initializedPromise;				
+				return _initializedPromise;			
 			},
 			getInitialized: function() {
 				return _initializedPromise;

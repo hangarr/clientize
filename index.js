@@ -4,6 +4,7 @@
 /**
  * CLIENTIZE_HOST				= Name of clientize proxy host (optional)
  * CLIENTIZE_PORT				= Host port (optional)
+ * CLIENTIZE_PROTOCOL			= Host http/https protocol (optional)
  * CLIENTIZE_DB_OIOCOLLECTION	= Orchestrate.io collection for configuration storage
  * CLIENTIZE_DB_CONFIG			= Name of reverse-proxy configuration doc in CLIENTIZE_DB_OIOCOLLECTION
  * CLIENTIZE_DB_APP				= Name of reverse-proxy configuration app in CLIENTIZE_DB_CONFIG doc
@@ -12,10 +13,10 @@
  * CLIENTIZE_PROXY_KEY			= Client application key for reverse-proxy
  * CLIENTIZE_PROXY_HOST			= Default upstream host
  * CLIENTIZE_PROXY_PORT			= Default upstream host port
+ * CLIENTIZE_PROXY_PROTOCOL		= Default upstream host protocol
  * CLIENTIZE_DASHBOARD_LOGIN	= Client dashboard application login password
  * CLIENTIZE_DASHBOARD_KEY		= Client application key for Orchestrate.io configuration storage
- * CLIENTIZE_DASHBOARD_OIOKEY	= Orchestrate.io API key for configuration storage (CLIENTIZE_DB_OIOKEY)
- */
+ * CLIENTIZE_DASHBOARD_OIOKEY	= Orchestrate.io API key for configuration storage  */
 ;(function() {
 	'use strict';
 	process.env.PROJECT_DIR = __dirname;
@@ -35,6 +36,8 @@
 				: (process.env.HOST ? process.env.HOST : 'localhost')),
 		PORT: (process.env.CLIENTIZE_PORT ? process.env.CLIENTIZE_PORT 
 				: (process.env.PORT ? parseInt(process.env.PORT) : 8000)),
+		PROTOCOL: (process.env.CLIENTIZE_PROTOCOL ? process.env.CLIENTIZE_PROTOCOL 
+				: (process.env.PROTOCOL ? process.env.PROTOCOL : 'https')),
 		DB_OIOCOLLECTION: (process.env.CLIENTIZE_DB_OIOCOLLECTION 
 							? process.env.CLIENTIZE_DB_OIOCOLLECTION : 'clientize' ),
 		DB_CONFIG: (process.env.CLIENTIZE_DB_CONFIG ? process.env.CLIENTIZE_DB_CONFIG : 'clientize-config'),
@@ -54,10 +57,12 @@
 		clientizeOptions.PROXY_HOST = process.env.CLIENTIZE_PROXY_HOST;
 		if(process.env.CLIENTIZE_PROXY_PORT) 
 			clientizeOptions.PROXY_PORT = process.env.CLIENTIZE_PROXY_PORT;
+		clientizeOptions.PROXY_PROTOCOL = process.env.CLIENTIZE_PROXY_PROTOCOL;
 	}
 	else {
 		clientizeOptions.PROXY_HOST = clientizeOptions.HOST;
 		clientizeOptions.PROXY_PORT = clientizeOptions.PORT;
+		clientizeOptions.PROXY_PROTOCOL = clientizeOptions.PROTOCOL;
 	}
 console.log(clientizeOptions);
 
@@ -65,7 +70,8 @@ console.log(clientizeOptions);
 	var defaultOptions = {
 		connection: {
 			host: clientizeOptions.HOST,
-			port: clientizeOptions.PORT
+			port: clientizeOptions.PORT,
+			protocol: clientizeOptions.PROTOCOL
 		},   
 		proxy: {
 			app: clientizeOptions.DB_APP,
@@ -73,7 +79,8 @@ console.log(clientizeOptions);
 			routes: [{
 				method: '*',
 				path: '/'+ clientizeOptions.PROXY_HOST + '/' + clientizeOptions.DB_APP + '/{p*}',
-				protocol: 'https',
+//				protocol: 'https',
+				protocol: clientizeOptions.PROXY_PROTOCOL,
 				host: clientizeOptions.PROXY_HOST,
 //    			port: null,				
 				username: clientizeOptions.PROXY_OIOKEY,
@@ -222,7 +229,8 @@ console.log(clientizeOptions);
 	    },
 	    function(callback) {
 	        cdb = oio({
-	        	protocol: 'http',
+//	        	protocol: 'http',
+	        	protocol: options.connection.protocol,
 	        	host: options.connection.host,
 	        	port: options.connection.port,
 	        	prefix: '/api.orchestrate.io/' + options.proxy.app,
