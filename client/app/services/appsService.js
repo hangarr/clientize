@@ -136,17 +136,22 @@
 				_response = null;
 				_apps = null;
 			}
-			else return {
-//			    protocol: 'http',
-//		    	protocol: options.connection.protocol,
-//		    	host: options.connection.host,
-//		    	port: options.connection.port,
-		    	protocol: options.web.protocol,
-		    	host: options.web.host,
-		    	port: options.web.port,
-			    prefix: '/api.orchestrate.io/' + options.dashboard.app,
-//			    token: options.dashboard.key + ':',
-			    token: { bearer: options.dashboard.key }
+			else {
+				var opts = {
+//			    	protocol: 'http',
+//		    		protocol: options.connection.protocol,
+//		    		host: options.connection.host,
+//		    		port: options.connection.port,
+					protocol: options.web.protocol,
+					host: options.web.host,
+					prefix: '/api.orchestrate.io/' + options.dashboard.app,
+//			    	token: options.dashboard.key + ':',
+					token: { bearer: options.dashboard.key }
+				};
+				if(options.web.port)
+					opts.port = options.web.port;
+console.log(opts);				
+				return opts;
 			};
 		};
 

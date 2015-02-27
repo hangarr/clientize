@@ -264,14 +264,20 @@ console.log(clientizeOptions);
 	    	});    	
 	    },
 	    function(callback) {
-	        cdb = oio({
-//	        	protocol: 'http',
-	        	protocol: options.connection.protocol,
-	        	host: options.connection.host,
-	        	port: options.connection.port,
-	        	prefix: '/api.orchestrate.io/' + options.proxy.app,
-	        	token: { bearer: options.proxy.key }
-	        });
+	    	var opts = {
+//		        protocol: 'http',
+//		        protocol: options.connection.protocol,
+//		        host: options.connection.host,
+//		        port: options.connection.port,
+			    protocol: options.web.protocol,
+			    host: options.web.host,
+		        prefix: '/api.orchestrate.io/' + options.proxy.app,
+		        token: { bearer: options.proxy.key }	    			
+	    	};
+	    	if(options.web.port)
+	    		opts.port = options.web.port;
+
+	        cdb = oio(opts);
 	    	cdb.ping()
 	    	.then(function() {
 	    		console.log('Reverse-proxied host ping successful');
