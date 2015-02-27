@@ -36,18 +36,39 @@
 	  , oio = require('clientize-orchestrate')(Promise);
 
 	var clientizeOptions = {};
-	clientizeOptions.HOST = (process.env.CLIENTIZE_HOST ? process.env.CLIENTIZE_HOST 
-			: (process.env.HOST ? process.env.HOST : 'localhost'));
-	clientizeOptions.PORT = (process.env.CLIENTIZE_PORT ? process.env.CLIENTIZE_PORT 
-			: (process.env.PORT ? parseInt(process.env.PORT) : 8000));
-	clientizeOptions.PROTOCOL = (process.env.CLIENTIZE_PROTOCOL ? process.env.CLIENTIZE_PROTOCOL 
-			: (process.env.PROTOCOL ? process.env.PROTOCOL : 'https'));
-	clientizeOptions.WEB_HOST = (process.env.CLIENTIZE_WEB_HOST ? process.env.CLIENTIZE_WEB_HOST 
-			: (clientizeOptions.HOST ? clientizeOptions.HOST : 'localhost'));
-	clientizeOptions.WEB_PORT = (process.env.CLIENTIZE_WEB_PORT ? process.env.CLIENTIZE_WEB_PORT 
-			: (clientizeOptions.PORT ? parseInt(clientizeOptions.PORT) : 8000));
-	clientizeOptions.WEB_PROTOCOL = (process.env.CLIENTIZE_WEB_PROTOCOL ? process.env.CLIENTIZE_WEB_PROTOCOL 
-			: (clientizeOptions.PROTOCOL ? clientizeOptions.PROTOCOL : 'https'));
+
+	if(process.env.CLIENTIZE_HOST)
+		clientizeOptions.HOST = process.env.CLIENTIZE_HOST;
+	else if(process.env.HOST)
+		clientizeOptions.HOST = process.env.HOST;
+	else
+		clientizeOptions.HOST = 'localhost';
+	
+	if(process.env.CLIENTIZE_PORT)
+		clientizeOptions.PORT = process.env.CLIENTIZE_PORT;
+	else if(process.env.PORT)
+		clientizeOptions.PORT = process.env.PORT;
+	
+	if (process.env.CLIENTIZE_PROTOCOL)
+		clientizeOptions.PROTOCOL = process.env.CLIENTIZE_PROTOCOL;		
+	else if(process.env.PROTOCOL)
+		clientizeOptions.PROTOCOL = process.env.PROTOCOL;
+	else
+		clientizeOptions.PROTOCOL = 'https';
+
+	if(process.env.CLIENTIZE_WEB_HOST) {
+		clientizeOptions.WEB_HOST = process.env.CLIENTIZE_WEB_HOST;
+		if(process.env.CLIENTIZE_WEB_PORT)
+			clientizeOptions.WEB_PORT = process.env.CLIENTIZE_WEB_PORT;
+		clientizeOptions.WEB_PROTOCOL = (process.env.CLIENTIZE_WEB_PROTOCOL ? process.env.CLIENTIZE_WEB_PROTOCOL : 'https');
+	}
+	else {
+		clientizeOptions.WEB_HOST = clientizeOptions.HOST;
+		if(clientizeOptions.PORT)
+			clientizeOptions.WEB_PORT = clientizeOptions.PORT;
+		clientizeOptions.WEB_PROTOCOL = clientizeOptions.PROTOCOL;		
+	};
+
 	clientizeOptions.DB_OIOCOLLECTION = (process.env.CLIENTIZE_DB_OIOCOLLECTION 
 			? process.env.CLIENTIZE_DB_OIOCOLLECTION : 'clientize' );
 	clientizeOptions.DB_CONFIG = (process.env.CLIENTIZE_DB_CONFIG ? process.env.CLIENTIZE_DB_CONFIG : 'clientize-config');
@@ -70,7 +91,8 @@
 	}
 	else {
 		clientizeOptions.PROXY_HOST = clientizeOptions.HOST;
-		clientizeOptions.PROXY_PORT = clientizeOptions.PORT;
+		if(clientizeOptions.PORT)
+			clientizeOptions.PROXY_PORT = clientizeOptions.PORT;
 		clientizeOptions.PROXY_PROTOCOL = clientizeOptions.PROTOCOL;
 	}
 console.log(clientizeOptions);

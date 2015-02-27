@@ -66,10 +66,10 @@
 	ReverseProxy.prototype.configure = function(callback) {
 		var that = this;
 		
-		this.server.connection(Hoek.clone({
-			host: this.options.connection.host,
-			port: this.options.connection.port
-		}));
+		var opts = {host: this.options.connection.host};
+		if(this.options.connection.port)
+			opts.port = this.options.connection.port;
+		this.server.connection(opts);
 		
 		var that = this;
 
