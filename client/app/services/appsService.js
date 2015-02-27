@@ -137,13 +137,16 @@
 				_apps = null;
 			}
 			else return {
-//			    	protocol: 'http',
-			    	protocol: options.connection.protocol,
-			    	host: options.connection.host,
-			    	port: options.connection.port,
-			    	prefix: '/api.orchestrate.io/' + options.dashboard.app,
-//			    	token: options.dashboard.key + ':',
-			    	token: { bearer: options.dashboard.key }
+//			    protocol: 'http',
+//		    	protocol: options.connection.protocol,
+//		    	host: options.connection.host,
+//		    	port: options.connection.port,
+		    	protocol: options.web.protocol,
+		    	host: options.web.host,
+		    	port: options.web.port,
+			    prefix: '/api.orchestrate.io/' + options.dashboard.app,
+//			    token: options.dashboard.key + ':',
+			    token: { bearer: options.dashboard.key }
 			};
 		};
 

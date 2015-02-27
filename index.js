@@ -2,9 +2,12 @@
  * Reverse proxy demo
  */
 /**
- * CLIENTIZE_HOST				= Name of clientize proxy host (optional)
- * CLIENTIZE_PORT				= Host port (optional)
+ * CLIENTIZE_HOST				= Reverse-proxy host (optional)
+ * CLIENTIZE_PORT				= Reverse-proxy host port (optional)
  * CLIENTIZE_PROTOCOL			= Host http/https protocol (optional)
+ * CLIENTIZE_WEB_HOST			= Webserver in front of reverse-proxy host (optional)
+ * CLIENTIZE_WEB_PORT			= Webserver in front of reverse-proxy host port (optional)
+ * CLIENTIZE_WEB_PROTOCOL		= Webserver in front of reverse-proxy host http/https protocol (optional)
  * CLIENTIZE_DB_OIOCOLLECTION	= Orchestrate.io collection for configuration storage
  * CLIENTIZE_DB_CONFIG			= Name of reverse-proxy configuration doc in CLIENTIZE_DB_OIOCOLLECTION
  * CLIENTIZE_DB_APP				= Name of reverse-proxy configuration app in CLIENTIZE_DB_CONFIG doc
@@ -16,7 +19,8 @@
  * CLIENTIZE_PROXY_PROTOCOL		= Default upstream host protocol
  * CLIENTIZE_DASHBOARD_LOGIN	= Client dashboard application login password
  * CLIENTIZE_DASHBOARD_KEY		= Client application key for Orchestrate.io configuration storage
- * CLIENTIZE_DASHBOARD_OIOKEY	= Orchestrate.io API key for configuration storage  */
+ * CLIENTIZE_DASHBOARD_OIOKEY	= Orchestrate.io API key for configuration storage  
+ */
 ;(function() {
 	'use strict';
 	process.env.PROJECT_DIR = __dirname;
@@ -31,33 +35,38 @@
 //	  , oio = require('clientize-orchestrate');
 	  , oio = require('clientize-orchestrate')(Promise);
 
-	var clientizeOptions = {
-		HOST: (process.env.CLIENTIZE_HOST ? process.env.CLIENTIZE_HOST 
-				: (process.env.HOST ? process.env.HOST : 'localhost')),
-		PORT: (process.env.CLIENTIZE_PORT ? process.env.CLIENTIZE_PORT 
-				: (process.env.PORT ? parseInt(process.env.PORT) : 8000)),
-		PROTOCOL: (process.env.CLIENTIZE_PROTOCOL ? process.env.CLIENTIZE_PROTOCOL 
-				: (process.env.PROTOCOL ? process.env.PROTOCOL : 'https')),
-		DB_OIOCOLLECTION: (process.env.CLIENTIZE_DB_OIOCOLLECTION 
-							? process.env.CLIENTIZE_DB_OIOCOLLECTION : 'clientize' ),
-		DB_CONFIG: (process.env.CLIENTIZE_DB_CONFIG ? process.env.CLIENTIZE_DB_CONFIG : 'clientize-config'),
-		DB_APP: (process.env.CLIENTIZE_DB_APP ? process.env.CLIENTIZE_DB_APP : 'clientize-passthrough'),
-		DB_OIOKEY: (process.env.CLIENTIZE_DB_OIOKEY	? process.env.CLIENTIZE_DB_OIOKEY : generatekey([8], '')),
-		PROXY_OIOKEY: (process.env.CLIENTIZE_PROXY_OIOKEY ?	process.env.CLIENTIZE_PROXY_OIOKEY
-						: generatekey([8,4,4,4,12], '-')),
-		PROXY_KEY: (process.env.CLIENTIZE_PROXY_KEY	? process.env.CLIENTIZE_PROXY_KEY : generatekey([8],'')),
-		DASHBOARD_LOGIN: (process.env.CLIENTIZE_DASHBOARD_LOGIN ? process.env.CLIENTIZE_DASHBOARD_LOGIN : 'clientizeit'),
-		DASHBOARD_KEY: (process.env.CLIENTIZE_DASHBOARD_KEY	? process.env.CLIENTIZE_DASHBOARD_KEY : generatekey([8], '')),
-		DASHBOARD_OIOKEY: (process.env.CLIENTIZE_DASHBOARD_OIOKEY ? process.env.CLIENTIZE_DASHBOARD_OIOKEY
-							: generatekey([8,4,4,4,12], '-'))
-	};
+	var clientizeOptions = {};
+	clientizeOptions.HOST = (process.env.CLIENTIZE_HOST ? process.env.CLIENTIZE_HOST 
+			: (process.env.HOST ? process.env.HOST : 'localhost'));
+	clientizeOptions.PORT = (process.env.CLIENTIZE_PORT ? process.env.CLIENTIZE_PORT 
+			: (process.env.PORT ? parseInt(process.env.PORT) : 8000));
+	clientizeOptions.PROTOCOL = (process.env.CLIENTIZE_PROTOCOL ? process.env.CLIENTIZE_PROTOCOL 
+			: (process.env.PROTOCOL ? process.env.PROTOCOL : 'https'));
+	clientizeOptions.WEB_HOST = (process.env.CLIENTIZE_WEB_HOST ? process.env.CLIENTIZE_WEB_HOST 
+			: (clientizeOptions.HOST ? clientizeOptions.HOST : 'localhost'));
+	clientizeOptions.WEB_PORT = (process.env.CLIENTIZE_WEB_PORT ? process.env.CLIENTIZE_WEB_PORT 
+			: (clientizeOptions.PORT ? parseInt(clientizeOptions.PORT) : 8000));
+	clientizeOptions.WEB_PROTOCOL = (process.env.CLIENTIZE_WEB_PROTOCOL ? process.env.CLIENTIZE_WEB_PROTOCOL 
+			: (clientizeOptions.PROTOCOL ? clientizeOptions.PROTOCOL : 'https'));
+	clientizeOptions.DB_OIOCOLLECTION = (process.env.CLIENTIZE_DB_OIOCOLLECTION 
+			? process.env.CLIENTIZE_DB_OIOCOLLECTION : 'clientize' );
+	clientizeOptions.DB_CONFIG = (process.env.CLIENTIZE_DB_CONFIG ? process.env.CLIENTIZE_DB_CONFIG : 'clientize-config');
+	clientizeOptions.DB_APP = (process.env.CLIENTIZE_DB_APP ? process.env.CLIENTIZE_DB_APP : 'clientize-passthrough');
+	clientizeOptions.DB_OIOKEY = (process.env.CLIENTIZE_DB_OIOKEY	? process.env.CLIENTIZE_DB_OIOKEY : generatekey([8], ''));
+	clientizeOptions.PROXY_OIOKEY = (process.env.CLIENTIZE_PROXY_OIOKEY ?	process.env.CLIENTIZE_PROXY_OIOKEY
+			: generatekey([8,4,4,4,12], '-'));
+	clientizeOptions.PROXY_KEY = (process.env.CLIENTIZE_PROXY_KEY	? process.env.CLIENTIZE_PROXY_KEY : generatekey([8],''));
+	clientizeOptions.DASHBOARD_LOGIN = (process.env.CLIENTIZE_DASHBOARD_LOGIN ? process.env.CLIENTIZE_DASHBOARD_LOGIN : 'clientizeit');
+	clientizeOptions.DASHBOARD_KEY = (process.env.CLIENTIZE_DASHBOARD_KEY	? process.env.CLIENTIZE_DASHBOARD_KEY : generatekey([8], ''));
+	clientizeOptions.DASHBOARD_OIOKEY = (process.env.CLIENTIZE_DASHBOARD_OIOKEY ? process.env.CLIENTIZE_DASHBOARD_OIOKEY
+			: generatekey([8,4,4,4,12], '-'));
 
 	// add the host and port if supplied
 	if(process.env.CLIENTIZE_PROXY_HOST) {
 		clientizeOptions.PROXY_HOST = process.env.CLIENTIZE_PROXY_HOST;
 		if(process.env.CLIENTIZE_PROXY_PORT) 
 			clientizeOptions.PROXY_PORT = process.env.CLIENTIZE_PROXY_PORT;
-		clientizeOptions.PROXY_PROTOCOL = process.env.CLIENTIZE_PROXY_PROTOCOL;
+		clientizeOptions.PROXY_PROTOCOL = (process.env.CLIENTIZE_PROXY_PROTOCOL ? process.env.CLIENTIZE_PROXY_PROTOCOL : 'https');
 	}
 	else {
 		clientizeOptions.PROXY_HOST = clientizeOptions.HOST;
@@ -72,6 +81,11 @@ console.log(clientizeOptions);
 			host: clientizeOptions.HOST,
 			port: clientizeOptions.PORT,
 			protocol: clientizeOptions.PROTOCOL
+		},   
+		web: {
+			host: clientizeOptions.WEB_HOST,
+			port: clientizeOptions.WEB_PORT,
+			protocol: clientizeOptions.WEB_PROTOCOL
 		},   
 		proxy: {
 			app: clientizeOptions.DB_APP,
