@@ -50,17 +50,20 @@
 		clientizeOptions.PORT = process.env.PORT;
 	
 	if (process.env.CLIENTIZE_PROTOCOL)
-		clientizeOptions.PROTOCOL = process.env.CLIENTIZE_PROTOCOL;		
+		clientizeOptions.PROTOCOL = (process.env.CLIENTIZE_PROTOCOL === 'https' ? 'https' : 'http');		
 	else if(process.env.PROTOCOL)
 		clientizeOptions.PROTOCOL = process.env.PROTOCOL;
 	else
-		clientizeOptions.PROTOCOL = 'https';
+		clientizeOptions.PROTOCOL = 'http';
 
 	if(process.env.CLIENTIZE_WEB_HOST) {
 		clientizeOptions.WEB_HOST = process.env.CLIENTIZE_WEB_HOST;
 		if(process.env.CLIENTIZE_WEB_PORT)
 			clientizeOptions.WEB_PORT = process.env.CLIENTIZE_WEB_PORT;
-		clientizeOptions.WEB_PROTOCOL = (process.env.CLIENTIZE_WEB_PROTOCOL ? process.env.CLIENTIZE_WEB_PROTOCOL : 'https');
+		if(process.env.CLIENTIZE_WEB_PROTOCOL)
+			clientizeOptions.WEB_PROTOCOL = (process.env.CLIENTIZE_WEB_PROTOCOL === 'http' ? 'http' : 'https');
+		else
+			clientizeOptions.WEB_PROTOCOL = 'https';
 	}
 	else {
 		clientizeOptions.WEB_HOST = clientizeOptions.HOST;
@@ -265,10 +268,6 @@ console.log(clientizeOptions);
 	    },
 	    function(callback) {
 	    	var opts = {
-//		        protocol: 'http',
-//		        protocol: options.connection.protocol,
-//		        host: options.connection.host,
-//		        port: options.connection.port,
 			    protocol: options.web.protocol,
 			    host: options.web.host,
 		        prefix: '/api.orchestrate.io/' + options.proxy.app,

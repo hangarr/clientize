@@ -6,15 +6,24 @@ The package includes an AngularJS 1.3 dashboard client which can be used to exam
 
 ## Environment variables
 The main script `index.js` implements a full reverse-proxy and client dashboard application using the orchestrate.io cloud service as configuration storage. This implementation is configured with two sets of environment variables.
-### Client API
-This set of variables configures the dashboard app and client-facing API host
+
+### Reverse-proxy API
+This set of variables configures the core reverse-proxy server API
 ```
-export CLIENTIZE_HOST=localhost											# Name of clientize proxy host (optional)
-export CLIENTIZE_PORT=8000												# Host port (optional)
-export CLIENTIZE_PROTOCOL=https											# Host http/https protocol (optional)
+export CLIENTIZE_HOST=localhost					# Reverse-proxy host (optional, default 'localhost')
+export CLIENTIZE_PORT=8000						# Reverse-proxy host port (optional, default is undefined)
+export CLIENTIZE_PROTOCOL=http					# Host http/https protocol (optional, default 'http')
 ```
-The example proxy will first look for `CLIENTIZE_HOST`, `CLIENTIZE_PORT`, and `CLIENTIZE_PROTOCOL` values. If they are not found, it will then look for `HOST`, `PORT`, and `PROTOCOL` values. It will use built in defaults if those are not found.
-IMPORTANT NOTE: The environment variable `CLIENTIZE_PROTOCOL` is the protocol of the application server seen by a browser or other application, not the protocol of the reverse proxy server.  The reverse proxy server for the moment only is an HTTP server and it is assumed it sits behind another webserver which can be an HTTP or HTTPS server.
+The example proxy will first look for `CLIENTIZE_HOST`, `CLIENTIZE_PORT`, and `CLIENTIZE_PROTOCOL` values. If they are not found, it will then look for `HOST`, `PORT`, and `PROTOCOL` values. It will use the specified defaults if those are not found.
+
+### Reverse-proxy web API for example dashboard app
+```
+export CLIENTIZE_WEB_HOST=api.orchestrate.io	# Web host for reverse-proxy
+export CLIENTIZE_WEB_PORT=5000					# Web host port for reverse-proxy (optional, default is undefined)
+export CLIENTIZE_WEB_PROTOCOL=https				# Web http/https protocol for reverse-proxy
+```
+These variables are used by the example Dashboard app to access the configuration store via the reverse-proxy.  If CLIENTIZE_WEB_HOST is not specified the corresponding reverse-proxy API values are used.  This set of variables allows the reverse proxy to be used behind a separate webserver such as on the Heroku platform.
+
 ### Default pass-through proxy
 This set of variables can be used to configure a basic pass-through reverse proxy
 ```
@@ -104,12 +113,14 @@ The `prefix` value is a standard HTTP path specifier of the form `/path/to/more`
 See the "Configuration App JSON-Schema" below for the JSON-Schema the Dashboard application uses to validate an configuration app document before it is saved in the configuration store.
 
 ## Dashboard Application
+
 ### Launching
 When the reverse-proxy is running, pointing at the `/` route of the reverse-proxy host brings up the dashboard client application, e.g.
 ```
 http://proxy.com[:8000]
 ```
 To protect upstream API key information the dashboard requires a single login credential supplied as the `CLIENTIZE_DASHBOARD_LOGIN` variable.  If this variable is not supplied the default login is `clientizeit`.  In the basic demo server the built-in browser login dialog is used, with the credential supplied as `username` with no `password`.
+
 ### "Options" page
 This page provides a read-only display of the current reverse-proxy configuration as a JSON string object that has four member objects:
 
@@ -232,6 +243,7 @@ If the proxy is configured as the minimal default pass-through proxy, the "Apps"
 ```
 
 ## Notes:
+
 ### AngularJS and Promises
 The digest mechanism in AngularJS can interact with ES6 promises pakages in unpredictable ways. The AngularJS 1.3 `$q` promise is designed specifically to work properly with the AngularJS digest mechanism.
 
